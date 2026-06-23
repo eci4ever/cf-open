@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { AppSidebar } from "@/components/app-sidebar";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/sidebar";
 
 function DashboardPage() {
+	const navigate = useNavigate();
 	const { data: session, isPending } = authClient.useSession();
 
 	if (isPending) {
@@ -24,6 +25,7 @@ function DashboardPage() {
 	}
 
 	if (!session) {
+		navigate({ to: "/" });
 		return null;
 	}
 
