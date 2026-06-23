@@ -5,20 +5,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import { MoreHorizontalIcon, TriangleAlertIcon, TrashIcon, MonitorIcon, SmartphoneIcon } from "lucide-react";
 import { toast } from "sonner";
 
-import { AppSidebar } from "@/components/app-sidebar";
 import { authClient } from "@/lib/auth-client";
-import {
-	Breadcrumb,
-	BreadcrumbItem,
-	BreadcrumbList,
-	BreadcrumbPage,
-} from "@/components/ui/breadcrumb";
-import { Separator } from "@/components/ui/separator";
-import {
-	SidebarInset,
-	SidebarProvider,
-	SidebarTrigger,
-} from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,6 +44,7 @@ import {
 	DialogTitle,
 } from "@/components/ui/dialog";
 import { DataTable } from "@/components/shared/data-table";
+import { PageLayout } from "@/components/shared/page-layout";
 
 type User = {
 	id: string;
@@ -306,36 +294,20 @@ function AdminUsersPage() {
 	};
 
 	return (
-		<SidebarProvider>
-			<AppSidebar session={session!} />
-			<SidebarInset>
-				<header className="flex h-16 shrink-0 items-center gap-2 border-b">
-					<div className="flex items-center gap-2 px-4">
-						<SidebarTrigger className="-ml-1" />
-						<Separator orientation="vertical" className="mr-2 data-[orientation=vertical]:h-4" />
-						<Breadcrumb>
-							<BreadcrumbList>
-								<BreadcrumbItem>
-									<BreadcrumbPage>Users</BreadcrumbPage>
-								</BreadcrumbItem>
-							</BreadcrumbList>
-						</Breadcrumb>
-					</div>
-				</header>
-				<div className="flex flex-1 flex-col gap-6 p-6">
-					<div>
-						<h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-						<p className="text-sm text-muted-foreground">Manage platform users.</p>
-					</div>
-					<DataTable
-						columns={columns}
-						data={users}
-						isPending={isPending}
-						searchKey="name"
-						total={data?.total}
-					/>
+		<>
+			<PageLayout session={session!} title="Users">
+				<div>
+					<h1 className="text-2xl font-semibold tracking-tight">Users</h1>
+					<p className="text-sm text-muted-foreground">Manage platform users.</p>
 				</div>
-			</SidebarInset>
+				<DataTable
+					columns={columns}
+					data={users}
+					isPending={isPending}
+					searchKey="name"
+					total={data?.total}
+				/>
+			</PageLayout>
 
 			<AlertDialog
 				open={confirm !== null}
@@ -492,7 +464,7 @@ function AdminUsersPage() {
 					</DialogFooter>
 				</DialogContent>
 			</Dialog>
-		</SidebarProvider>
+		</>
 	);
 }
 
