@@ -21,6 +21,15 @@ import {
 } from "@/components/ui/sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -39,6 +48,14 @@ import {
 	AlertDialogMedia,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
 import { DataTable } from "@/components/shared/data-table";
 
 type User = {
@@ -60,6 +77,10 @@ function AdminUsersPage() {
 	const queryClient = useQueryClient();
 
 	const [confirm, setConfirm] = useState<ConfirmAction | null>(null);
+	const [editUser, setEditUser] = useState<User | null>(null);
+	const [editName, setEditName] = useState("");
+	const [editEmail, setEditEmail] = useState("");
+	const [editRole, setEditRole] = useState("user");
 
 	const { data, isPending } = useQuery({
 		queryKey: ["admin", "users"],
@@ -116,6 +137,19 @@ function AdminUsersPage() {
 		onError: () => toast.error("Failed to impersonate user"),
 	});
 
+	const updateUserMutation = useMutation({
+		mutationFn: async ({ userId, name, email, role }: { userId: string; name: string; email: string; role: string }) => {
+			await authClient.admin.updateUser({ userId, data: { name, email } });
+			await authClient.admin.setRole({ userId, role });
+		},
+		onSuccess: () => {
+			toast.success("User updated");
+			invalidate();
+			setEditUser(null);
+		},
+		onError: () => toast.error("Failed to update user"),
+	});
+
 	const columns: ColumnDef<User>[] = useMemo(
 		() => [
 			{
@@ -165,18 +199,23 @@ function AdminUsersPage() {
 					const isBanned = user.banned;
 					const isCurrentUser = user.id === session?.user?.id;
 
-					if (isCurrentUser) return null;
-
 					return (
 						<DropdownMenu>
 							<DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
 								<MoreHorizontalIcon className="size-4" />
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end">
-								<DropdownMenuItem onClick={() => toast("Edit user — coming soon")}>
+								<DropdownMenuItem
+									onClick={() => {
+										setEditUser(user);
+										setEditName(user.name ?? "");
+										setEditEmail(user.email);
+										setEditRole(user.role ?? "user");
+									}}
+								>
 									Edit
 								</DropdownMenuItem>
-								{!isAdmin && (
+								{!isAdmin && !isCurrentUser && (
 									<>
 										<DropdownMenuItem
 											onClick={() =>
@@ -193,12 +232,14 @@ function AdminUsersPage() {
 									</>
 								)}
 								<DropdownMenuSeparator />
-								<DropdownMenuItem
-									variant="destructive"
-									onClick={() => setConfirm({ user, action: "delete" })}
-								>
-									Delete
-								</DropdownMenuItem>
+								{!isCurrentUser && (
+									<DropdownMenuItem
+										variant="destructive"
+										onClick={() => setConfirm({ user, action: "delete" })}
+									>
+										Delete
+									</DropdownMenuItem>
+								)}
 							</DropdownMenuContent>
 						</DropdownMenu>
 					);
@@ -295,6 +336,65 @@ function AdminUsersPage() {
 					</AlertDialogFooter>
 				</AlertDialogContent>
 			</AlertDialog>
+
+			<Dialog open={editUser !== null} onOpenChange={(open) => { if (!open) setEditUser(null); }}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Edit user</DialogTitle>
+						<DialogDescription>Update user details and role.</DialogDescription>
+					</DialogHeader>
+					<div className="grid gap-4">
+						<div className="grid gap-2">
+							<Label htmlFor="edit-name">Name</Label>
+							<Input
+								id="edit-name"
+								value={editName}
+								onChange={(e) => setEditName(e.target.value)}
+							/>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="edit-email">Email</Label>
+							<Input
+								id="edit-email"
+								type="email"
+								value={editEmail}
+								onChange={(e) => setEditEmail(e.target.value)}
+							/>
+						</div>
+						<div className="grid gap-2">
+							<Label htmlFor="edit-role">Role</Label>
+							<Select value={editRole} onValueChange={setEditRole}>
+								<SelectTrigger id="edit-role">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="user">User</SelectItem>
+									<SelectItem value="admin">Admin</SelectItem>
+								</SelectContent>
+							</Select>
+						</div>
+					</div>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setEditUser(null)}>
+							Cancel
+						</Button>
+						<Button
+							disabled={updateUserMutation.isPending}
+							onClick={() => {
+								if (!editUser) return;
+								updateUserMutation.mutate({
+									userId: editUser.id,
+									name: editName,
+									email: editEmail,
+									role: editRole,
+								});
+							}}
+						>
+							{updateUserMutation.isPending ? "Saving..." : "Save"}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</SidebarProvider>
 	);
 }
