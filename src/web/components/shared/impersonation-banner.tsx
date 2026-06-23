@@ -1,4 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useNavigate } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
 import { Button } from "@/components/ui/button";
 import { LogOutIcon, UserIcon } from "lucide-react";
@@ -7,6 +8,7 @@ import { toast } from "sonner";
 export function ImpersonationBanner() {
 	const { data: session } = authClient.useSession();
 	const queryClient = useQueryClient();
+	const navigate = useNavigate();
 
 	const isImpersonating = !!session?.session?.impersonatedBy;
 
@@ -15,6 +17,7 @@ export function ImpersonationBanner() {
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["session"] });
 			toast.success("Stopped impersonating");
+			navigate({ to: "/admin/users" });
 		},
 		onError: () => toast.error("Failed to stop impersonation"),
 	});
