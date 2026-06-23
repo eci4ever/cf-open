@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo, useCallback } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontalIcon, TriangleAlertIcon } from "lucide-react";
+import { MoreHorizontalIcon, TriangleAlertIcon, TrashIcon, MonitorIcon, SmartphoneIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { AppSidebar } from "@/components/app-sidebar";
@@ -81,6 +81,7 @@ function AdminUsersPage() {
 	const [editName, setEditName] = useState("");
 	const [editEmail, setEditEmail] = useState("");
 	const [editRole, setEditRole] = useState("user");
+	const [sessionUser, setSessionUser] = useState<User | null>(null);
 
 	const { data, isPending } = useQuery({
 		queryKey: ["admin", "users"],
@@ -150,6 +151,34 @@ function AdminUsersPage() {
 		onError: () => toast.error("Failed to update user"),
 	});
 
+	const sessionsQuery = useQuery({
+		queryKey: ["admin", "sessions", sessionUser?.id],
+		queryFn: async () => {
+			if (!sessionUser) return [];
+			const res = await authClient.admin.listUserSessions({ userId: sessionUser.id });
+			return res.data ?? [];
+		},
+		enabled: !!sessionUser,
+	});
+
+	const revokeSessionMutation = useMutation({
+		mutationFn: (sessionToken: string) => authClient.admin.revokeUserSession({ sessionToken }),
+		onSuccess: () => {
+			toast.success("Session revoked");
+			sessionsQuery.refetch();
+		},
+		onError: () => toast.error("Failed to revoke session"),
+	});
+
+	const revokeAllSessionsMutation = useMutation({
+		mutationFn: (userId: string) => authClient.admin.revokeUserSessions({ userId }),
+		onSuccess: () => {
+			toast.success("All sessions revoked");
+			sessionsQuery.refetch();
+		},
+		onError: () => toast.error("Failed to revoke all sessions"),
+	});
+
 	const columns: ColumnDef<User>[] = useMemo(
 		() => [
 			{
@@ -214,6 +243,9 @@ function AdminUsersPage() {
 									}}
 								>
 									Edit
+								</DropdownMenuItem>
+								<DropdownMenuItem onClick={() => setSessionUser(user)}>
+									Sessions
 								</DropdownMenuItem>
 								{!isAdmin && !isCurrentUser && (
 									<>
@@ -391,6 +423,69 @@ function AdminUsersPage() {
 							}}
 						>
 							{updateUserMutation.isPending ? "Saving..." : "Save"}
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			<Dialog open={sessionUser !== null} onOpenChange={(open) => { if (!open) setSessionUser(null); }}>
+				<DialogContent className="sm:max-w-md">
+					<DialogHeader>
+						<DialogTitle>Sessions for {sessionUser?.name}</DialogTitle>
+						<DialogDescription>
+							{sessionsQuery.isPending
+								? "Loading sessions..."
+								: `${sessionsQuery.data?.length ?? 0} active session(s)`}
+						</DialogDescription>
+					</DialogHeader>
+					<div className="grid gap-3">
+						{sessionsQuery.isPending ? (
+							<p className="text-sm text-muted-foreground py-4 text-center">Loading...</p>
+						) : sessionsQuery.data?.length === 0 ? (
+							<p className="text-sm text-muted-foreground py-4 text-center">No active sessions.</p>
+						) : (
+							sessionsQuery.data?.map((session: { id: string; token: string; createdAt: string; userAgent?: string; ipAddress?: string }) => (
+								<div
+									key={session.id}
+									className="flex items-center justify-between rounded-lg border p-3"
+								>
+									<div className="flex items-center gap-3">
+										<div className="flex size-8 items-center justify-center rounded-full bg-muted">
+											<MonitorIcon className="size-4" />
+										</div>
+										<div>
+											<p className="text-sm font-medium">{session.userAgent ?? "Unknown device"}</p>
+											<p className="text-xs text-muted-foreground">
+												{session.ipAddress ?? "Unknown IP"} &middot;{" "}
+												{new Date(session.createdAt).toLocaleDateString()}
+											</p>
+										</div>
+									</div>
+									<Button
+										variant="ghost"
+										size="icon"
+										onClick={() => revokeSessionMutation.mutate(session.token)}
+										disabled={revokeSessionMutation.isPending}
+									>
+										<TrashIcon className="size-4 text-destructive" />
+									</Button>
+								</div>
+							))
+						)}
+					</div>
+					<DialogFooter className="justify-between">
+						<Button
+							variant="destructive"
+							size="sm"
+							disabled={!sessionsQuery.data?.length || revokeAllSessionsMutation.isPending}
+							onClick={() => {
+								if (sessionUser) revokeAllSessionsMutation.mutate(sessionUser.id);
+							}}
+						>
+							{revokeAllSessionsMutation.isPending ? "Revoking..." : "Revoke all"}
+						</Button>
+						<Button variant="outline" onClick={() => setSessionUser(null)}>
+							Close
 						</Button>
 					</DialogFooter>
 				</DialogContent>
