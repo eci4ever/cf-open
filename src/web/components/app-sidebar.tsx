@@ -20,7 +20,7 @@ export function AppSidebar({
 	...props
 }: React.ComponentProps<typeof Sidebar> & {
 	session: {
-		user: { name: string; email: string; image?: string | null };
+		user: { name: string; email: string; image?: string | null; role?: string | null };
 	};
 }) {
 	return (
@@ -43,38 +43,40 @@ export function AppSidebar({
 						</SidebarMenuItem>
 					</SidebarMenu>
 				</SidebarGroup>
-				<SidebarGroup>
-					<SidebarGroupLabel className="mb-1">Platform Admin</SidebarGroupLabel>
-					<SidebarMenu>
-						<SidebarMenuItem>
-							<SidebarMenuButton
-								tooltip="Users"
-								render={<Link to="/admin/users" />}
-							>
-								<UsersIcon />
-								<span>Users</span>
-							</SidebarMenuButton>
-						</SidebarMenuItem>
-						<SidebarMenuItem>
-							<SidebarMenuButton
-								tooltip="Organizations"
-								render={<Link to="/admin/organizations" />}
-							>
-								<Building2Icon />
-								<span>Organizations</span>
-							</SidebarMenuButton>
-						</SidebarMenuItem>
-						<SidebarMenuItem>
-							<SidebarMenuButton
-								tooltip="Subscriptions"
-								render={<Link to="/admin/subscriptions" />}
-							>
-								<CreditCardIcon />
-								<span>Subscriptions</span>
-							</SidebarMenuButton>
-						</SidebarMenuItem>
-					</SidebarMenu>
-				</SidebarGroup>
+				{session.user.role === "admin" ? (
+					<SidebarGroup>
+						<SidebarGroupLabel className="mb-1">Platform Admin</SidebarGroupLabel>
+						<SidebarMenu>
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									tooltip="Users"
+									render={<Link to="/admin/users" />}
+								>
+									<UsersIcon />
+									<span>Users</span>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									tooltip="Organizations"
+									render={<Link to="/admin/organizations" />}
+								>
+									<Building2Icon />
+									<span>Organizations</span>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									tooltip="Subscriptions"
+									render={<Link to="/admin/subscriptions" />}
+								>
+									<CreditCardIcon />
+									<span>Subscriptions</span>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						</SidebarMenu>
+					</SidebarGroup>
+				) : null}
 				<SidebarGroup>
 					<SidebarGroupLabel className="mb-1">Services</SidebarGroupLabel>
 					<SidebarMenu>

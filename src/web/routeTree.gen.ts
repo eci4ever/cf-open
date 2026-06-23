@@ -16,6 +16,7 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
+import { Route as ProtectedAdminRouteImport } from './routes/_protected/admin'
 import { Route as ProtectedServicesAttendanceRouteImport } from './routes/_protected/services/attendance'
 import { Route as ProtectedAdminUsersRouteImport } from './routes/_protected/admin/users'
 import { Route as ProtectedAdminSubscriptionsRouteImport } from './routes/_protected/admin/subscriptions'
@@ -55,6 +56,11 @@ const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => ProtectedRoute,
 } as any)
+const ProtectedAdminRoute = ProtectedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => ProtectedRoute,
+} as any)
 const ProtectedServicesAttendanceRoute =
   ProtectedServicesAttendanceRouteImport.update({
     id: '/services/attendance',
@@ -62,21 +68,21 @@ const ProtectedServicesAttendanceRoute =
     getParentRoute: () => ProtectedRoute,
   } as any)
 const ProtectedAdminUsersRoute = ProtectedAdminUsersRouteImport.update({
-  id: '/admin/users',
-  path: '/admin/users',
-  getParentRoute: () => ProtectedRoute,
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => ProtectedAdminRoute,
 } as any)
 const ProtectedAdminSubscriptionsRoute =
   ProtectedAdminSubscriptionsRouteImport.update({
-    id: '/admin/subscriptions',
-    path: '/admin/subscriptions',
-    getParentRoute: () => ProtectedRoute,
+    id: '/subscriptions',
+    path: '/subscriptions',
+    getParentRoute: () => ProtectedAdminRoute,
   } as any)
 const ProtectedAdminOrganizationsRoute =
   ProtectedAdminOrganizationsRouteImport.update({
-    id: '/admin/organizations',
-    path: '/admin/organizations',
-    getParentRoute: () => ProtectedRoute,
+    id: '/organizations',
+    path: '/organizations',
+    getParentRoute: () => ProtectedAdminRoute,
   } as any)
 
 export interface FileRoutesByFullPath {
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
+  '/admin': typeof ProtectedAdminRouteWithChildren
   '/dashboard': typeof ProtectedDashboardRoute
   '/admin/organizations': typeof ProtectedAdminOrganizationsRoute
   '/admin/subscriptions': typeof ProtectedAdminSubscriptionsRoute
@@ -97,6 +104,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
+  '/admin': typeof ProtectedAdminRouteWithChildren
   '/dashboard': typeof ProtectedDashboardRoute
   '/admin/organizations': typeof ProtectedAdminOrganizationsRoute
   '/admin/subscriptions': typeof ProtectedAdminSubscriptionsRoute
@@ -111,6 +119,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/signup': typeof SignupRoute
+  '/_protected/admin': typeof ProtectedAdminRouteWithChildren
   '/_protected/dashboard': typeof ProtectedDashboardRoute
   '/_protected/admin/organizations': typeof ProtectedAdminOrganizationsRoute
   '/_protected/admin/subscriptions': typeof ProtectedAdminSubscriptionsRoute
@@ -125,6 +134,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/signup'
+    | '/admin'
     | '/dashboard'
     | '/admin/organizations'
     | '/admin/subscriptions'
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/signup'
+    | '/admin'
     | '/dashboard'
     | '/admin/organizations'
     | '/admin/subscriptions'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/signup'
+    | '/_protected/admin'
     | '/_protected/dashboard'
     | '/_protected/admin/organizations'
     | '/_protected/admin/subscriptions'
@@ -217,6 +229,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedDashboardRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/_protected/admin': {
+      id: '/_protected/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof ProtectedAdminRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/_protected/services/attendance': {
       id: '/_protected/services/attendance'
       path: '/services/attendance'
@@ -226,41 +245,53 @@ declare module '@tanstack/react-router' {
     }
     '/_protected/admin/users': {
       id: '/_protected/admin/users'
-      path: '/admin/users'
+      path: '/users'
       fullPath: '/admin/users'
       preLoaderRoute: typeof ProtectedAdminUsersRouteImport
-      parentRoute: typeof ProtectedRoute
+      parentRoute: typeof ProtectedAdminRoute
     }
     '/_protected/admin/subscriptions': {
       id: '/_protected/admin/subscriptions'
-      path: '/admin/subscriptions'
+      path: '/subscriptions'
       fullPath: '/admin/subscriptions'
       preLoaderRoute: typeof ProtectedAdminSubscriptionsRouteImport
-      parentRoute: typeof ProtectedRoute
+      parentRoute: typeof ProtectedAdminRoute
     }
     '/_protected/admin/organizations': {
       id: '/_protected/admin/organizations'
-      path: '/admin/organizations'
+      path: '/organizations'
       fullPath: '/admin/organizations'
       preLoaderRoute: typeof ProtectedAdminOrganizationsRouteImport
-      parentRoute: typeof ProtectedRoute
+      parentRoute: typeof ProtectedAdminRoute
     }
   }
 }
 
-interface ProtectedRouteChildren {
-  ProtectedDashboardRoute: typeof ProtectedDashboardRoute
+interface ProtectedAdminRouteChildren {
   ProtectedAdminOrganizationsRoute: typeof ProtectedAdminOrganizationsRoute
   ProtectedAdminSubscriptionsRoute: typeof ProtectedAdminSubscriptionsRoute
   ProtectedAdminUsersRoute: typeof ProtectedAdminUsersRoute
+}
+
+const ProtectedAdminRouteChildren: ProtectedAdminRouteChildren = {
+  ProtectedAdminOrganizationsRoute: ProtectedAdminOrganizationsRoute,
+  ProtectedAdminSubscriptionsRoute: ProtectedAdminSubscriptionsRoute,
+  ProtectedAdminUsersRoute: ProtectedAdminUsersRoute,
+}
+
+const ProtectedAdminRouteWithChildren = ProtectedAdminRoute._addFileChildren(
+  ProtectedAdminRouteChildren,
+)
+
+interface ProtectedRouteChildren {
+  ProtectedAdminRoute: typeof ProtectedAdminRouteWithChildren
+  ProtectedDashboardRoute: typeof ProtectedDashboardRoute
   ProtectedServicesAttendanceRoute: typeof ProtectedServicesAttendanceRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
+  ProtectedAdminRoute: ProtectedAdminRouteWithChildren,
   ProtectedDashboardRoute: ProtectedDashboardRoute,
-  ProtectedAdminOrganizationsRoute: ProtectedAdminOrganizationsRoute,
-  ProtectedAdminSubscriptionsRoute: ProtectedAdminSubscriptionsRoute,
-  ProtectedAdminUsersRoute: ProtectedAdminUsersRoute,
   ProtectedServicesAttendanceRoute: ProtectedServicesAttendanceRoute,
 }
 
