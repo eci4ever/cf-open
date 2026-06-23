@@ -8,6 +8,10 @@ export const user = sqliteTable("user", {
 	image: text("image"),
 	createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 	updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+	role: text("role"),
+	banned: integer("banned", { mode: "boolean" }),
+	banReason: text("ban_reason"),
+	banExpires: integer("ban_expires", { mode: "timestamp_ms" }),
 });
 
 export const session = sqliteTable("session", {
@@ -21,6 +25,9 @@ export const session = sqliteTable("session", {
 	userAgent: text("user_agent"),
 	createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 	updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+	impersonatedBy: text("impersonated_by"),
+	activeOrganizationId: text("active_organization_id"),
+	activeTeamId: text("active_team_id"),
 });
 
 export const account = sqliteTable("account", {
