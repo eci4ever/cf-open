@@ -1,36 +1,66 @@
-import { createRoute } from "@tanstack/react-router";
+import { createRoute, Link } from "@tanstack/react-router";
 import { rootRoute } from "./__root";
+import { Button } from "@/components/ui/button";
+import {
+	Card,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 
 function LandingPage() {
 	return (
-		<div className="landing">
-			<section className="hero">
-				<h1>TeamOS</h1>
-				<p className="tagline">
+		<div className="flex min-h-screen flex-col items-center justify-center gap-16 p-8">
+			<section className="flex flex-col items-center gap-4 text-center">
+				<Badge variant="outline" className="mb-2">
+					Built with OpenCode & DeepSeek V4 Flash Free
+				</Badge>
+				<h1 className="text-5xl font-bold tracking-tight">TeamOS</h1>
+				<p className="text-xl text-muted-foreground">
 					Team management, simplified.
 				</p>
-				<p className="description">
-					Built with <strong>OpenCode</strong> and <strong>DeepSeek V4 Flash Free</strong>.
-				</p>
+				<div className="mt-4 flex gap-3">
+					<Link to="/login">
+						<Button size="lg">Get started</Button>
+					</Link>
+					<Button variant="outline" size="lg">
+						Learn more
+					</Button>
+				</div>
 			</section>
 
-			<section className="features">
-				<div className="feature">
-					<h3>Members</h3>
-					<p>Invite, organize, and manage your team in one place.</p>
-				</div>
-				<div className="feature">
-					<h3>Projects</h3>
-					<p>Track work across projects with clarity.</p>
-				</div>
-				<div className="feature">
-					<h3>Roles</h3>
-					<p>Set permissions and keep everything secure.</p>
-				</div>
+			<section className="flex flex-wrap justify-center gap-6">
+				<Card className="w-56 text-center">
+					<CardHeader>
+						<CardTitle>Members</CardTitle>
+						<CardDescription>
+							Invite, organize, and manage your team in one place.
+						</CardDescription>
+					</CardHeader>
+				</Card>
+				<Card className="w-56 text-center">
+					<CardHeader>
+						<CardTitle>Projects</CardTitle>
+						<CardDescription>
+							Track work across projects with clarity.
+						</CardDescription>
+					</CardHeader>
+				</Card>
+				<Card className="w-56 text-center">
+					<CardHeader>
+						<CardTitle>Roles</CardTitle>
+						<CardDescription>
+							Set permissions and keep everything secure.
+						</CardDescription>
+					</CardHeader>
+				</Card>
 			</section>
 
 			<footer>
-				<p>Powered by OpenCode &middot; DeepSeek V4 Flash Free</p>
+				<p className="text-xs text-muted-foreground">
+					Powered by OpenCode &middot; DeepSeek V4 Flash Free
+				</p>
 			</footer>
 		</div>
 	);
