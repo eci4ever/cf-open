@@ -1,4 +1,4 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { AppSidebar } from "@/components/app-sidebar";
 import { authClient } from "@/lib/auth-client";
 import {
@@ -17,21 +17,11 @@ import {
 } from "@/components/ui/sidebar";
 
 function DashboardPage() {
-	const navigate = useNavigate();
-	const { data: session, isPending } = authClient.useSession();
-
-	if (isPending) {
-		return <div />;
-	}
-
-	if (!session) {
-		navigate({ to: "/" });
-		return null;
-	}
+	const { data: session } = authClient.useSession();
 
 	return (
 		<SidebarProvider>
-			<AppSidebar session={session} />
+			<AppSidebar session={session!} />
 			<SidebarInset>
 				<header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-12">
 					<div className="flex items-center gap-2 px-4">

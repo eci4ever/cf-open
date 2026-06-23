@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,7 +23,6 @@ export function LoginForm({
 	className,
 	...props
 }: React.ComponentProps<"div">) {
-	const navigate = useNavigate();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [error, setError] = useState("");
@@ -34,19 +33,24 @@ export function LoginForm({
 		setError("");
 		setLoading(true);
 
-		const { data, error: authError } = await authClient.signIn.email({
-			email,
-			password,
-		});
+		try {
+			const { data, error: authError } = await authClient.signIn.email({
+				email,
+				password,
+			});
 
-		if (authError) {
-			setError(authError.message ?? "An error occurred");
+			if (authError) {
+				setError(authError.message ?? "An error occurred");
+				setLoading(false);
+				return;
+			}
+
+			if (data) {
+				window.location.href = "/dashboard";
+			}
+		} catch (err) {
+			setError(err instanceof Error ? err.message : "An unexpected error occurred");
 			setLoading(false);
-			return;
-		}
-
-		if (data) {
-			navigate({ to: "/dashboard" });
 		}
 	}
 

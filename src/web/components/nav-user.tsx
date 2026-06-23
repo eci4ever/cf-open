@@ -1,4 +1,3 @@
-import { useNavigate } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
 import {
 	Avatar,
@@ -39,11 +38,10 @@ export function NavUser({
 	};
 }) {
 	const { isMobile } = useSidebar();
-	const navigate = useNavigate();
 
 	async function handleLogout() {
 		await authClient.signOut();
-		navigate({ to: "/" });
+		window.location.href = "/";
 	}
 
 	const initials = user.name
