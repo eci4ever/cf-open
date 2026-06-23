@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,39 +28,42 @@ export function SignupForm({
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [confirmPassword, setConfirmPassword] = useState("");
-	const [error, setError] = useState("");
 	const [loading, setLoading] = useState(false);
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
-		setError("");
 
 		if (password !== confirmPassword) {
-			setError("Passwords do not match");
+			toast.error("Passwords do not match");
 			return;
 		}
 
 		if (password.length < 8) {
-			setError("Password must be at least 8 characters");
+			toast.error("Password must be at least 8 characters");
 			return;
 		}
 
 		setLoading(true);
 
-		const { data, error: authError } = await authClient.signUp.email({
-			email,
-			password,
-			name,
-		});
+		try {
+			const { data, error: authError } = await authClient.signUp.email({
+				email,
+				password,
+				name,
+			});
 
-		if (authError) {
-			setError(authError.message ?? "An error occurred");
+			if (authError) {
+				toast.error(authError.message ?? "An error occurred");
+				setLoading(false);
+				return;
+			}
+
+			if (data) {
+				navigate({ to: "/dashboard" });
+			}
+		} catch (err) {
+			toast.error(err instanceof Error ? err.message : "An unexpected error occurred");
 			setLoading(false);
-			return;
-		}
-
-		if (data) {
-			navigate({ to: "/dashboard" });
 		}
 	}
 
@@ -126,9 +130,6 @@ export function SignupForm({
 									Must be at least 8 characters long.
 								</FieldDescription>
 							</Field>
-							{error ? (
-								<p className="text-sm text-destructive">{error}</p>
-							) : null}
 							<Field>
 								<Button type="submit" disabled={loading}>
 									{loading ? "Creating account..." : "Create Account"}
