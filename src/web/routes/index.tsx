@@ -8,8 +8,11 @@ import {
 	CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { authClient } from "@/lib/auth-client";
 
 function LandingPage() {
+	const { data: session, isPending } = authClient.useSession();
+
 	return (
 		<div className="flex min-h-screen flex-col items-center justify-center gap-16 p-8">
 			<section className="flex flex-col items-center gap-4 text-center">
@@ -20,14 +23,34 @@ function LandingPage() {
 				<p className="text-xl text-muted-foreground">
 					Team management, simplified.
 				</p>
-				<div className="mt-4 flex gap-3">
-					<Link to="/login">
-						<Button size="lg">Get started</Button>
-					</Link>
-					<Button variant="outline" size="lg">
-						Learn more
-					</Button>
-				</div>
+				{session ? (
+					<div className="mt-4 flex flex-col items-center gap-2">
+						<p className="text-muted-foreground">
+							Welcome, {session.user.name}
+						</p>
+						<Button
+							variant="outline"
+							onClick={() => authClient.signOut()}
+						>
+							Sign out
+						</Button>
+					</div>
+				) : (
+					<div className="mt-4 flex gap-3">
+						{isPending ? (
+							<Button size="lg" disabled>
+								Loading...
+							</Button>
+						) : (
+							<Link to="/login">
+								<Button size="lg">Get started</Button>
+							</Link>
+						)}
+						<Button variant="outline" size="lg">
+							Learn more
+						</Button>
+					</div>
+				)}
 			</section>
 
 			<section className="flex flex-wrap justify-center gap-6">
