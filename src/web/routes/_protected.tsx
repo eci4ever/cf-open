@@ -1,12 +1,13 @@
 import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
+import { Spinner } from "@/components/ui/spinner";
 
 function ProtectedLayout() {
 	const navigate = useNavigate();
 	const { data: session, isPending } = authClient.useSession();
 
 	if (isPending) {
-		return <div />;
+		return <Spinner className="min-h-screen" />;
 	}
 
 	if (!session) {
