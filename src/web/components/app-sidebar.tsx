@@ -1,7 +1,7 @@
 import { NavMain } from "@/components/nav-main";
 import { NavProjects } from "@/components/nav-projects";
 import { NavUser } from "@/components/nav-user";
-import { TeamSwitcher } from "@/components/team-switcher";
+import { OrganizationsSwitcher } from "@/components/organizations-switcher";
 import {
 	Sidebar,
 	SidebarContent,
@@ -10,9 +10,6 @@ import {
 	SidebarRail,
 } from "@/components/ui/sidebar";
 import {
-	GalleryVerticalEndIcon,
-	AudioLinesIcon,
-	TerminalIcon,
 	TerminalSquareIcon,
 	BotIcon,
 	BookOpenIcon,
@@ -23,23 +20,6 @@ import {
 } from "lucide-react";
 
 const data = {
-	teams: [
-		{
-			name: "Acme Inc",
-			logo: <GalleryVerticalEndIcon />,
-			plan: "Enterprise",
-		},
-		{
-			name: "Acme Corp.",
-			logo: <AudioLinesIcon />,
-			plan: "Startup",
-		},
-		{
-			name: "Evil Corp.",
-			logo: <TerminalIcon />,
-			plan: "Free",
-		},
-	],
 	navMain: [
 		{
 			title: "Playground",
@@ -103,7 +83,7 @@ export function AppSidebar({
 	return (
 		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
-				<TeamSwitcher teams={data.teams} />
+				<OrganizationsSwitcher />
 			</SidebarHeader>
 			<SidebarContent>
 				<NavMain items={data.navMain} />
