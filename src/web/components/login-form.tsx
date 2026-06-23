@@ -46,7 +46,7 @@ export function LoginForm({
 		}
 
 		if (data) {
-			navigate({ to: "/" });
+			navigate({ to: "/dashboard" });
 		}
 	}
 

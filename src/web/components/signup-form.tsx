@@ -59,7 +59,7 @@ export function SignupForm({
 		}
 
 		if (data) {
-			navigate({ to: "/" });
+			navigate({ to: "/dashboard" });
 		}
 	}
 

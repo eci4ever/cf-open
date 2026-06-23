@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -11,6 +11,12 @@ import { authClient } from "@/lib/auth-client";
 
 function LandingPage() {
 	const { data: session, isPending } = authClient.useSession();
+	const navigate = useNavigate();
+
+	if (session) {
+		navigate({ to: "/dashboard" });
+		return null;
+	}
 
 	return (
 		<div className="flex min-h-screen flex-col items-center justify-center gap-16 p-8">
@@ -22,34 +28,20 @@ function LandingPage() {
 				<p className="text-xl text-muted-foreground">
 					Team management, simplified.
 				</p>
-				{session ? (
-					<div className="mt-4 flex flex-col items-center gap-2">
-						<p className="text-muted-foreground">
-							Welcome, {session.user.name}
-						</p>
-						<Button
-							variant="outline"
-							onClick={() => authClient.signOut()}
-						>
-							Sign out
+				<div className="mt-4 flex gap-3">
+					{isPending ? (
+						<Button size="lg" disabled>
+							Loading...
 						</Button>
-					</div>
-				) : (
-					<div className="mt-4 flex gap-3">
-						{isPending ? (
-							<Button size="lg" disabled>
-								Loading...
-							</Button>
-						) : (
-							<Link to="/login">
-								<Button size="lg">Get started</Button>
-							</Link>
-						)}
-						<Button variant="outline" size="lg">
-							Learn more
-						</Button>
-					</div>
-				)}
+					) : (
+						<Link to="/login">
+							<Button size="lg">Get started</Button>
+						</Link>
+					)}
+					<Button variant="outline" size="lg">
+						Learn more
+					</Button>
+				</div>
 			</section>
 
 			<section className="flex flex-wrap justify-center gap-6">
