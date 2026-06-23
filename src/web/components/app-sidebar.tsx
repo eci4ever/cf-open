@@ -12,7 +12,7 @@ import {
 	SidebarMenuItem,
 	SidebarRail,
 } from "@/components/ui/sidebar";
-import { LayoutDashboardIcon } from "lucide-react";
+import { LayoutDashboardIcon, UsersIcon, Building2Icon, CreditCardIcon, CalendarCheckIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 export function AppSidebar({
@@ -39,6 +39,52 @@ export function AppSidebar({
 							>
 								<LayoutDashboardIcon />
 								<span>Dashboard</span>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+					</SidebarMenu>
+				</SidebarGroup>
+				<SidebarGroup>
+					<SidebarGroupLabel className="mb-1">Platform Admin</SidebarGroupLabel>
+					<SidebarMenu>
+						<SidebarMenuItem>
+							<SidebarMenuButton
+								tooltip="Users"
+								render={<Link to="/admin/users" />}
+							>
+								<UsersIcon />
+								<span>Users</span>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+						<SidebarMenuItem>
+							<SidebarMenuButton
+								tooltip="Organizations"
+								render={<Link to="/admin/organizations" />}
+							>
+								<Building2Icon />
+								<span>Organizations</span>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+						<SidebarMenuItem>
+							<SidebarMenuButton
+								tooltip="Subscriptions"
+								render={<Link to="/admin/subscriptions" />}
+							>
+								<CreditCardIcon />
+								<span>Subscriptions</span>
+							</SidebarMenuButton>
+						</SidebarMenuItem>
+					</SidebarMenu>
+				</SidebarGroup>
+				<SidebarGroup>
+					<SidebarGroupLabel className="mb-1">Services</SidebarGroupLabel>
+					<SidebarMenu>
+						<SidebarMenuItem>
+							<SidebarMenuButton
+								tooltip="Attendance"
+								render={<Link to="/services/attendance" />}
+							>
+								<CalendarCheckIcon />
+								<span>Attendance</span>
 							</SidebarMenuButton>
 						</SidebarMenuItem>
 					</SidebarMenu>
