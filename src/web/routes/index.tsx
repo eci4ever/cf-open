@@ -1,5 +1,4 @@
-import { createRoute, Link } from "@tanstack/react-router";
-import { rootRoute } from "./__root";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import {
 	Card,
@@ -89,8 +88,6 @@ function LandingPage() {
 	);
 }
 
-export const Route = createRoute({
-	getParentRoute: () => rootRoute,
-	path: "/",
+export const Route = createFileRoute("/")({
 	component: LandingPage,
 });

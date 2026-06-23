@@ -1,17 +1,13 @@
-import { createRoute } from "@tanstack/react-router";
-import { rootRoute } from "./__root";
+import { createFileRoute } from "@tanstack/react-router";
 
 function AboutPage() {
 	return (
-		<div className="about-page">
+		<div>
 			<h1>About</h1>
-			<p>This is a Vite + React + Hono + Cloudflare Workers application.</p>
 		</div>
 	);
 }
 
-export const Route = createRoute({
-	getParentRoute: () => rootRoute,
-	path: "/about",
+export const Route = createFileRoute("/about")({
 	component: AboutPage,
 });

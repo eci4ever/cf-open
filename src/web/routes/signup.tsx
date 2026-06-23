@@ -1,5 +1,4 @@
-import { createRoute, Link } from "@tanstack/react-router";
-import { rootRoute } from "./__root";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { GalleryVerticalEnd } from "lucide-react";
 import { SignupForm } from "@/components/signup-form";
 
@@ -22,8 +21,6 @@ function SignupPage() {
 	);
 }
 
-export const Route = createRoute({
-	getParentRoute: () => rootRoute,
-	path: "/signup",
+export const Route = createFileRoute("/signup")({
 	component: SignupPage,
 });
