@@ -272,7 +272,7 @@ function AdminUsersPage() {
 										if (!isCurrentUser) setConfirm({ user, action: "delete" });
 									}}
 								>
-									{isCurrentUser ? "Cannot delete yourself" : "Delete"}
+									Delete
 									</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
