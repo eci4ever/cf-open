@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ export function LoginForm({
 	className,
 	...props
 }: React.ComponentProps<"div">) {
+	const navigate = useNavigate();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [loading, setLoading] = useState(false);
@@ -44,7 +45,8 @@ export function LoginForm({
 			}
 
 			if (data) {
-				window.location.href = "/dashboard";
+				toast.success("Welcome back!");
+				navigate({ to: "/dashboard" });
 			}
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : "An unexpected error occurred");

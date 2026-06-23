@@ -1,4 +1,7 @@
+import { useNavigate } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
+import { queryClient } from "@/main";
+import { toast } from "sonner";
 import {
 	Avatar,
 	AvatarFallback,
@@ -37,11 +40,14 @@ export function NavUser({
 		avatar: string;
 	};
 }) {
+	const navigate = useNavigate();
 	const { isMobile } = useSidebar();
 
 	async function handleLogout() {
 		await authClient.signOut();
-		window.location.href = "/";
+		queryClient.invalidateQueries({ queryKey: ["session"] });
+		toast.success("Logged out");
+		navigate({ to: "/" });
 	}
 
 	const initials = user.name

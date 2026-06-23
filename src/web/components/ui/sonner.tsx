@@ -5,7 +5,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       richColors
       closeButton
-      position="top-right"
+      position="bottom-right"
       {...props}
     />
   )

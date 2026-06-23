@@ -59,7 +59,8 @@ export function SignupForm({
 			}
 
 			if (data) {
-				navigate({ to: "/dashboard" });
+				toast.success("Registration successful");
+				navigate({ to: "/onboarding" });
 			}
 		} catch (err) {
 			toast.error(err instanceof Error ? err.message : "An unexpected error occurred");
