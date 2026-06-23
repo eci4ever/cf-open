@@ -2,6 +2,7 @@
 	"name": "cf-open",
 	"description": "Build with OpenCode",
 	"dependencies": {
+		"@tanstack/react-query": "^5.101.0",
 		"@tanstack/react-router": "^1.170.16",
 		"hono": "4.11.1",
 		"react": "19.2.1",
