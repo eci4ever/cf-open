@@ -156,7 +156,8 @@ function AdminUsersPage() {
 		queryFn: async () => {
 			if (!sessionUser) return [];
 			const res = await authClient.admin.listUserSessions({ userId: sessionUser.id });
-			return res.data ?? [];
+			const raw = res.data ?? [];
+			return Array.isArray(raw) ? raw : raw.sessions ?? [];
 		},
 		enabled: !!sessionUser,
 	});
@@ -264,14 +265,15 @@ function AdminUsersPage() {
 									</>
 								)}
 								<DropdownMenuSeparator />
-								{!isCurrentUser && (
-									<DropdownMenuItem
-										variant="destructive"
-										onClick={() => setConfirm({ user, action: "delete" })}
-									>
-										Delete
+								<DropdownMenuItem
+									variant="destructive"
+									disabled={isCurrentUser}
+									onClick={() => {
+										if (!isCurrentUser) setConfirm({ user, action: "delete" });
+									}}
+								>
+									{isCurrentUser ? "Cannot delete yourself" : "Delete"}
 									</DropdownMenuItem>
-								)}
 							</DropdownMenuContent>
 						</DropdownMenu>
 					);
