@@ -92,7 +92,12 @@ function AdminUsersPage() {
 	});
 
 	const deleteMutation = useMutation({
-		mutationFn: (userId: string) => authClient.admin.removeUser({ userId }),
+		mutationFn: (userId: string) => {
+			if (userId === session?.user?.id) {
+				throw new Error("Cannot delete yourself");
+			}
+			return authClient.admin.removeUser({ userId });
+		},
 		onSuccess: () => {
 			toast.success("User deleted");
 			invalidate();
@@ -160,6 +165,8 @@ function AdminUsersPage() {
 					const isBanned = user.banned;
 					const isCurrentUser = user.id === session?.user?.id;
 
+					if (isCurrentUser) return null;
+
 					return (
 						<DropdownMenu>
 							<DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
@@ -169,33 +176,29 @@ function AdminUsersPage() {
 								<DropdownMenuItem onClick={() => toast("Edit user — coming soon")}>
 									Edit
 								</DropdownMenuItem>
-								{!isAdmin && !isCurrentUser && (
-									<DropdownMenuItem
-										onClick={() =>
-											setConfirm({ user, action: isBanned ? "unban" : "ban" })
-										}
-									>
-										{isBanned ? "Unban" : "Ban"}
-									</DropdownMenuItem>
-								)}
-								{!isAdmin && !isCurrentUser && (
-									<DropdownMenuItem
-										onClick={() =>
-											impersonateMutation.mutate(user.id)
-										}
-									>
-										Impersonate
-									</DropdownMenuItem>
+								{!isAdmin && (
+									<>
+										<DropdownMenuItem
+											onClick={() =>
+												setConfirm({ user, action: isBanned ? "unban" : "ban" })
+											}
+										>
+											{isBanned ? "Unban" : "Ban"}
+										</DropdownMenuItem>
+										<DropdownMenuItem
+											onClick={() => impersonateMutation.mutate(user.id)}
+										>
+											Impersonate
+										</DropdownMenuItem>
+									</>
 								)}
 								<DropdownMenuSeparator />
-								{!isCurrentUser && (
-									<DropdownMenuItem
-										variant="destructive"
-										onClick={() => setConfirm({ user, action: "delete" })}
-									>
-										Delete
-									</DropdownMenuItem>
-								)}
+								<DropdownMenuItem
+									variant="destructive"
+									onClick={() => setConfirm({ user, action: "delete" })}
+								>
+									Delete
+								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
 					);
