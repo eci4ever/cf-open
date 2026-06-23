@@ -15,10 +15,14 @@ Team management web app built with [OpenCode](https://opencode.ai) and [DeepSeek
 ## Scripts
 
 ```bash
-pnpm dev       # Start dev server
-pnpm build     # Typecheck + build
-pnpm deploy    # Deploy to Cloudflare Workers
-pnpm lint      # Run ESLint
+pnpm dev             # Start dev server
+pnpm build           # Typecheck + build
+pnpm deploy          # Deploy to Cloudflare Workers
+pnpm lint            # Run ESLint
+pnpm db:generate     # Generate D1 migration
+pnpm db:migrate      # Apply migrations to remote D1
+pnpm db:migrate:local  # Apply migrations to local D1
+pnpm db:studio       # Open Drizzle Studio
 ```
 
 ## Routes

@@ -13,5 +13,12 @@
 	"assets": {
 		"directory": "./dist/client",
 		"not_found_handling": "single-page-application"
-	}
+	},
+	"d1_databases": [
+		{
+			"binding": "cf_open_db",
+			"database_name": "cf-open-db",
+			"database_id": "5c0b5be7-74d7-43cf-a4ba-b81c9e2533b7"
+		}
+	]
 }
