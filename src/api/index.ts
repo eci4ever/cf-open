@@ -1,6 +1,9 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createAuth } from "./auth";
+import { createDb } from "../db/client";
+import { organization, member } from "../db/schema";
+import { count, eq } from "drizzle-orm";
 
 const app = new Hono<{ Bindings: Env }>();
 
@@ -22,5 +25,33 @@ app.on(["POST", "GET"], "/api/auth/*", (c) => {
 });
 
 app.get("/api/", (c) => c.json({ name: "Cloudflare" }));
+
+app.get("/api/admin/organizations", async (c) => {
+	const auth = createAuth(c.env.cf_open_db);
+	const session = await auth.api.getSession({ headers: c.req.raw.headers });
+
+	if (!session || session.user.role !== "admin") {
+		return c.json({ error: "Unauthorized" }, 403);
+	}
+
+	const db = createDb(c.env.cf_open_db);
+	const orgs = await db
+		.select({
+			id: organization.id,
+			name: organization.name,
+			slug: organization.slug,
+			createdAt: organization.createdAt,
+			memberCount: count(member.id),
+		})
+		.from(organization)
+		.leftJoin(member, eq(member.organizationId, organization.id))
+		.groupBy(organization.id);
+
+	const [totalResult] = await db
+		.select({ total: count() })
+		.from(organization);
+
+	return c.json({ data: orgs, total: totalResult?.total ?? 0 });
+});
 
 export default app;
