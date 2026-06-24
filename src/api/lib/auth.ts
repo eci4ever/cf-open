@@ -21,8 +21,42 @@ export function createAuth(env: Env) {
 			provider: "sqlite",
 			schema,
 		}),
+		rateLimit: {
+			enabled: true,
+			window: 60,
+			max: 100,
+			customRules: {
+				"/sign-in/email": {
+					window: 60,
+					max: 5,
+				},
+				"/sign-up/email": {
+					window: 3600,
+					max: 3,
+				},
+				"/forget-password": {
+					window: 3600,
+					max: 3,
+				},
+				"/reset-password": {
+					window: 3600,
+					max: 5,
+				},
+				"/verify-email": {
+					window: 3600,
+					max: 5,
+				},
+				"/two-factor/*": {
+					window: 60,
+					max: 3,
+				},
+			},
+		},
 		emailAndPassword: {
 			enabled: true,
+			minPasswordLength: 8,
+			maxPasswordLength: 128,
+			requireEmailVerification: false,
 			sendResetPassword: async ({ user, url }) => {
 				// Extract token from the Better Auth URL and build a direct frontend link
 				const token = new URL(url).pathname.split("/").pop();
@@ -63,11 +97,16 @@ export function createAuth(env: Env) {
 			changeEmail: {
 				enabled: true,
 				sendChangeEmailConfirmation: async ({ user, url }) => {
+					// Extract token and build a direct frontend link
+					const token = new URL(url).searchParams.get("token");
+					const verifyUrl = token
+						? buildWebUrl(emailEnv, `/verify-email?token=${token}`)
+						: url;
 					await sendEmail(emailEnv, {
 						to: user.email,
 						template: makeEmailTemplate(emailEnv, "email-verification", {
 							recipientName: user.name,
-							actionUrl: url,
+							actionUrl: verifyUrl,
 						}),
 					});
 				},
