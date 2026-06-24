@@ -40,11 +40,16 @@ export function createAuth(env: Env) {
 		},
 		emailVerification: {
 			sendVerificationEmail: async ({ user, url }) => {
+				// Extract token from the Better Auth URL and build a direct frontend link
+				const token = new URL(url).searchParams.get("token");
+				const verifyUrl = token
+					? buildWebUrl(emailEnv, `/verify-email?token=${token}`)
+					: url;
 				await sendEmail(emailEnv, {
 					to: user.email,
 					template: makeEmailTemplate(emailEnv, "email-verification", {
 						recipientName: user.name,
-						actionUrl: url,
+						actionUrl: verifyUrl,
 					}),
 				});
 			},

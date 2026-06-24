@@ -22,7 +22,7 @@ import {
 	AlertDialogMedia,
 	AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { KeyIcon, MonitorIcon, PlusIcon, SmartphoneIcon, TrashIcon, TriangleAlertIcon } from "lucide-react";
+import { KeyIcon, MonitorIcon, PlusIcon, SmartphoneIcon, TrashIcon, TriangleAlertIcon, MailCheckIcon, MailIcon } from "lucide-react";
 
 function ProfileSection({ session }: { session: NonNullable<ReturnType<typeof authClient.useSession>["data"]> }) {
 	const [name, setName] = useState(session.user.name ?? "");
@@ -58,6 +58,74 @@ function ProfileSection({ session }: { session: NonNullable<ReturnType<typeof au
 				</div>
 				<Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
 					{mutation.isPending ? "Saving..." : "Save"}
+				</Button>
+			</CardContent>
+		</Card>
+	);
+}
+
+function EmailVerificationSection({ session }: { session: NonNullable<ReturnType<typeof authClient.useSession>["data"]> }) {
+	const isVerified = session.user.emailVerified;
+
+	const sendMutation = useMutation({
+		mutationFn: async () => {
+			const res = await authClient.sendVerificationEmail({
+				email: session.user.email,
+				callbackURL: "/verify-email",
+			});
+			if (res.error) throw new Error(res.error.message ?? "Failed to send verification email");
+			return res;
+		},
+		onSuccess: () => {
+			toast.success("Verification email sent");
+		},
+		onError: (err) => toast.error(err.message),
+	});
+
+	if (isVerified) {
+		return (
+			<Card>
+				<CardHeader>
+					<div className="flex items-center justify-between">
+						<div>
+							<CardTitle>Email Verification</CardTitle>
+							<CardDescription>Your email address has been verified.</CardDescription>
+						</div>
+						<Badge variant="default" className="gap-1">
+							<MailCheckIcon className="size-3" />
+							Verified
+						</Badge>
+					</div>
+				</CardHeader>
+			</Card>
+		);
+	}
+
+	return (
+		<Card>
+			<CardHeader>
+				<div className="flex items-center justify-between">
+					<div>
+						<CardTitle>Email Verification</CardTitle>
+						<CardDescription>Verify your email address to secure your account.</CardDescription>
+					</div>
+					<Badge variant="outline" className="gap-1">
+						<MailIcon className="size-3" />
+						Unverified
+					</Badge>
+				</div>
+			</CardHeader>
+			<CardContent className="space-y-4">
+				<p className="text-sm text-muted-foreground">
+					Your email <span className="font-medium">{session.user.email}</span> is not verified yet. Click the button below to send a verification link.
+				</p>
+				<Button
+					variant="outline"
+					disabled={sendMutation.isPending}
+					onClick={() => sendMutation.mutate()}
+				>
+					<MailCheckIcon className="size-4" />
+					{sendMutation.isPending ? "Sending..." : "Send verification email"}
 				</Button>
 			</CardContent>
 		</Card>
@@ -583,6 +651,7 @@ function AccountPage() {
 			</div>
 			<div className="space-y-6">
 				<ProfileSection session={session} />
+				<EmailVerificationSection session={session} />
 				<PasswordSection />
 				<TwoFactorSection session={session} />
 				<PasskeysSection />
