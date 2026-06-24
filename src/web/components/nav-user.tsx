@@ -42,12 +42,14 @@ export function NavUser({
 }) {
 	const navigate = useNavigate();
 	const { isMobile } = useSidebar();
+	const { refetch: refetchSession } = authClient.useSession();
 
 	async function handleLogout() {
 		await authClient.signOut();
+		await refetchSession();
 		queryClient.invalidateQueries({ queryKey: ["session"] });
 		toast.success("Logged out");
-		navigate({ to: "/" });
+		navigate({ to: "/login" });
 	}
 
 	const initials = user.name

@@ -25,6 +25,7 @@ export function LoginForm({
 	...props
 }: React.ComponentProps<"div">) {
 	const navigate = useNavigate();
+	const { refetch: refetchSession } = authClient.useSession();
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [loading, setLoading] = useState(false);
@@ -52,6 +53,7 @@ export function LoginForm({
 			}
 			if (data) {
 				toast.success("Welcome back!");
+				await refetchSession();
 				navigate({ to: "/dashboard" });
 			}
 		} catch (err) {
@@ -82,6 +84,7 @@ export function LoginForm({
 
 			if (data) {
 				toast.success("Welcome back!");
+				await refetchSession();
 				navigate({ to: "/dashboard" });
 			}
 		} catch (err) {
