@@ -16,7 +16,7 @@
 	},
 	"d1_databases": [
 		{
-			"binding": "cf_open_db",
+			"binding": "DB",
 			"database_name": "cf-open-db",
 			"database_id": "5c0b5be7-74d7-43cf-a4ba-b81c9e2533b7"
 		}

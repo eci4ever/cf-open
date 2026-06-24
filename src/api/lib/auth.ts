@@ -6,16 +6,44 @@ import { passkey } from "@better-auth/passkey";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { createDb } from "../db/client";
 import * as schema from "../db/schema/index";
+import {
+	sendEmail,
+	makeEmailTemplate,
+} from "../server/email/email.service";
+import type { EmailEnv } from "../server/email/email.types";
 
-export function createAuth(d1: D1Database) {
+export function createAuth(env: Env) {
+	const emailEnv: EmailEnv = env;
 	return betterAuth({
 		appName: "TeamOS",
-		database: drizzleAdapter(createDb(d1), {
+		database: drizzleAdapter(createDb(env.DB), {
 			provider: "sqlite",
 			schema,
 		}),
 		emailAndPassword: {
 			enabled: true,
+			sendResetPassword: async ({ user, url }) => {
+				await sendEmail(emailEnv, {
+					to: user.email,
+					template: makeEmailTemplate(emailEnv, "password-reset", {
+						recipientName: user.name,
+						actionUrl: url,
+					}),
+				});
+			},
+		},
+		emailVerification: {
+			sendVerificationEmail: async ({ user, url }) => {
+				await sendEmail(emailEnv, {
+					to: user.email,
+					template: makeEmailTemplate(emailEnv, "email-verification", {
+						recipientName: user.name,
+						actionUrl: url,
+					}),
+				});
+			},
+			sendOnSignUp: true,
+			autoSignInAfterVerification: true,
 		},
 		user: {
 			deleteUser: {
@@ -23,6 +51,15 @@ export function createAuth(d1: D1Database) {
 			},
 			changeEmail: {
 				enabled: true,
+				sendChangeEmailConfirmation: async ({ user, url }) => {
+					await sendEmail(emailEnv, {
+						to: user.email,
+						template: makeEmailTemplate(emailEnv, "email-verification", {
+							recipientName: user.name,
+							actionUrl: url,
+						}),
+					});
+				},
 			},
 		},
 		plugins: [

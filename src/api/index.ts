@@ -20,21 +20,21 @@ app.use(
 );
 
 app.on(["POST", "GET"], "/api/auth/*", (c) => {
-	const auth = createAuth(c.env.cf_open_db);
+	const auth = createAuth(c.env);
 	return auth.handler(c.req.raw);
 });
 
 app.get("/api/", (c) => c.json({ name: "Cloudflare" }));
 
 app.get("/api/admin/organizations", async (c) => {
-	const auth = createAuth(c.env.cf_open_db);
+	const auth = createAuth(c.env);
 	const session = await auth.api.getSession({ headers: c.req.raw.headers });
 
 	if (!session || session.user.role !== "admin") {
 		return c.json({ error: "Unauthorized" }, 403);
 	}
 
-	const db = createDb(c.env.cf_open_db);
+	const db = createDb(c.env.DB);
 	const [orgs, [totalResult]] = await Promise.all([
 		db
 			.select({
