@@ -34,8 +34,8 @@ function OnboardingPage() {
 							<MailCheck className="mr-2 size-4" />
 							Verify email
 						</Button>
-						<Button variant="default" className="w-full" asChild>
-							<Link to="/login">Go to login</Link>
+						<Button variant="default" className="w-full" render={<Link to="/login" />}>
+							Go to login
 						</Button>
 					</CardContent>
 				</Card>

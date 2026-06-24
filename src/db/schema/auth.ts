@@ -12,6 +12,7 @@ export const user = sqliteTable("user", {
 	banned: integer("banned", { mode: "boolean" }),
 	banReason: text("ban_reason"),
 	banExpires: integer("ban_expires", { mode: "timestamp_ms" }),
+	twoFactorEnabled: integer("two_factor_enabled", { mode: "boolean" }),
 });
 
 export const session = sqliteTable("session", {
@@ -55,4 +56,30 @@ export const verification = sqliteTable("verification", {
 	expiresAt: integer("expires_at", { mode: "timestamp_ms" }).notNull(),
 	createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
 	updatedAt: integer("updated_at", { mode: "timestamp_ms" }).notNull(),
+});
+
+export const twoFactor = sqliteTable("two_factor", {
+	id: text("id").primaryKey(),
+	userId: text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+	secret: text("secret").notNull(),
+	backupCodes: text("backup_codes").notNull(),
+	verified: integer("verified", { mode: "boolean" }).notNull(),
+});
+
+export const passkey = sqliteTable("passkey", {
+	id: text("id").primaryKey(),
+	name: text("name"),
+	publicKey: text("public_key").notNull(),
+	userId: text("user_id")
+		.notNull()
+		.references(() => user.id, { onDelete: "cascade" }),
+	credentialID: text("credential_id").notNull().unique(),
+	counter: integer("counter").notNull(),
+	deviceType: text("device_type").notNull(),
+	backedUp: integer("backed_up", { mode: "boolean" }).notNull(),
+	transports: text("transports"),
+	createdAt: integer("created_at", { mode: "timestamp_ms" }).notNull(),
+	aaguid: text("aaguid"),
 });

@@ -1,4 +1,4 @@
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
 import { queryClient } from "@/main";
 import { toast } from "sonner";
@@ -105,7 +105,7 @@ export function NavUser({
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
-							<DropdownMenuItem>
+							<DropdownMenuItem render={<Link to="/account" />}>
 								<BadgeCheckIcon />
 								Account
 							</DropdownMenuItem>

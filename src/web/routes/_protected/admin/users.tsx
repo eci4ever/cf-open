@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo, useCallback } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontalIcon, TriangleAlertIcon, TrashIcon, MonitorIcon, SmartphoneIcon } from "lucide-react";
+import { MoreHorizontalIcon, TriangleAlertIcon, TrashIcon, MonitorIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { authClient } from "@/lib/auth-client";
@@ -52,7 +52,7 @@ type User = {
 	email: string;
 	role: string | null;
 	banned: boolean | null;
-	createdAt: string;
+	createdAt: Date;
 };
 
 type ConfirmAction = {
@@ -68,13 +68,13 @@ function AdminUsersPage() {
 	const [editUser, setEditUser] = useState<User | null>(null);
 	const [editName, setEditName] = useState("");
 	const [editEmail, setEditEmail] = useState("");
-	const [editRole, setEditRole] = useState("user");
+	const [editRole, setEditRole] = useState<"user" | "admin">("user");
 	const [sessionUser, setSessionUser] = useState<User | null>(null);
 
 	const { data, isPending } = useQuery({
 		queryKey: ["admin", "users"],
 		queryFn: async () => {
-			const res = await authClient.admin.listUsers();
+			const res = await authClient.admin.listUsers({ query: {} });
 			return res.data;
 		},
 	});
@@ -127,7 +127,7 @@ function AdminUsersPage() {
 	});
 
 	const updateUserMutation = useMutation({
-		mutationFn: async ({ userId, name, email, role }: { userId: string; name: string; email: string; role: string }) => {
+		mutationFn: async ({ userId, name, email, role }: { userId: string; name: string; email: string; role: "user" | "admin" }) => {
 			await authClient.admin.updateUser({ userId, data: { name, email } });
 			await authClient.admin.setRole({ userId, role });
 		},
@@ -228,7 +228,7 @@ function AdminUsersPage() {
 										setEditUser(user);
 										setEditName(user.name ?? "");
 										setEditEmail(user.email);
-										setEditRole(user.role ?? "user");
+										setEditRole(user.role === "admin" ? "admin" : "user");
 									}}
 								>
 									Edit
@@ -274,7 +274,6 @@ function AdminUsersPage() {
 	const users = useMemo(() => (data?.users ?? []) as User[], [data]);
 
 	const selectedUser = confirm?.user;
-	const actionLabel = confirm?.action === "delete" ? "Delete" : confirm?.action === "ban" ? "Ban" : "Unban";
 	const actionVerb = confirm?.action === "delete" ? "Delete" : confirm?.action === "ban" ? "Ban" : "Unban";
 
 	const handleConfirm = () => {
@@ -369,7 +368,7 @@ function AdminUsersPage() {
 						</div>
 						<div className="grid gap-2">
 							<Label htmlFor="edit-role">Role</Label>
-							<Select value={editRole} onValueChange={setEditRole}>
+							<Select value={editRole} onValueChange={(v) => setEditRole(v ?? "user")}>
 								<SelectTrigger id="edit-role">
 									<SelectValue />
 								</SelectTrigger>
@@ -418,7 +417,7 @@ function AdminUsersPage() {
 						) : sessionsQuery.data?.length === 0 ? (
 							<p className="text-sm text-muted-foreground py-4 text-center">No active sessions.</p>
 						) : (
-							sessionsQuery.data?.map((session: { id: string; token: string; createdAt: string; userAgent?: string; ipAddress?: string }) => (
+							sessionsQuery.data?.map((session: { id: string; token: string; createdAt: Date; userAgent?: string | null; ipAddress?: string | null }) => (
 								<div
 									key={session.id}
 									className="flex items-center justify-between rounded-lg border p-3"

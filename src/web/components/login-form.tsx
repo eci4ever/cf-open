@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
+import { Fingerprint } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,6 +28,41 @@ export function LoginForm({
 	const [email, setEmail] = useState("");
 	const [password, setPassword] = useState("");
 	const [loading, setLoading] = useState(false);
+	const [passkeyLoading, setPasskeyLoading] = useState(false);
+
+	async function handlePasskeySignIn() {
+		setPasskeyLoading(true);
+		try {
+			const { data, error } = await authClient.signIn.passkey({
+				autoFill: false,
+			});
+			if (error) {
+				// User cancelled the browser prompt — not an error
+				if (
+					error.message?.toLowerCase().includes("cancel") ||
+					error.code === "CANCELLED" ||
+					error.code === "USER_CANCELLED"
+				) {
+					setPasskeyLoading(false);
+					return;
+				}
+				toast.error(error.message ?? "Passkey sign-in failed");
+				setPasskeyLoading(false);
+				return;
+			}
+			if (data) {
+				toast.success("Welcome back!");
+				navigate({ to: "/dashboard" });
+			}
+		} catch (err) {
+			const msg = err instanceof Error ? err.message : "An unexpected error occurred";
+			// Silently ignore user cancellation
+			if (!msg.toLowerCase().includes("cancel")) {
+				toast.error(msg);
+			}
+			setPasskeyLoading(false);
+		}
+	}
 
 	async function handleSubmit(e: React.FormEvent) {
 		e.preventDefault();
@@ -106,6 +142,24 @@ export function LoginForm({
 							</Field>
 						</FieldGroup>
 					</form>
+					<div className="relative my-4">
+						<div className="absolute inset-0 flex items-center">
+							<span className="w-full border-t" />
+						</div>
+						<div className="relative flex justify-center text-xs uppercase">
+							<span className="bg-card px-2 text-muted-foreground">Or</span>
+						</div>
+					</div>
+					<Button
+						type="button"
+						variant="outline"
+						className="w-full"
+						disabled={passkeyLoading || loading}
+						onClick={handlePasskeySignIn}
+					>
+						<Fingerprint className="size-4" />
+						{passkeyLoading ? "Authenticating..." : "Sign in with passkey"}
+					</Button>
 				</CardContent>
 			</Card>
 		</div>
