@@ -1,3 +1,8 @@
+minimumReleaseAge: 1440
+
+trustPolicy:
+  noDowngrade: true
+
 allowBuilds:
   esbuild: true
   workerd: true

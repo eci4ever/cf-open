@@ -139,7 +139,7 @@ function AdminUsersPage() {
 		onError: () => toast.error("Failed to update user"),
 	});
 
-	const sessionsQuery = useQuery({
+	const { data: adminSessions, refetch: refetchAdminSessions } = useQuery({
 		queryKey: ["admin", "sessions", sessionUser?.id],
 		queryFn: async () => {
 			if (!sessionUser) return [];
@@ -154,7 +154,7 @@ function AdminUsersPage() {
 		mutationFn: (sessionToken: string) => authClient.admin.revokeUserSession({ sessionToken }),
 		onSuccess: () => {
 			toast.success("Session revoked");
-			sessionsQuery.refetch();
+			refetchAdminSessions();
 		},
 		onError: () => toast.error("Failed to revoke session"),
 	});
@@ -163,7 +163,7 @@ function AdminUsersPage() {
 		mutationFn: (userId: string) => authClient.admin.revokeUserSessions({ userId }),
 		onSuccess: () => {
 			toast.success("All sessions revoked");
-			sessionsQuery.refetch();
+			refetchAdminSessions();
 		},
 		onError: () => toast.error("Failed to revoke all sessions"),
 	});
@@ -261,7 +261,7 @@ function AdminUsersPage() {
 									}}
 								>
 									Delete
-									</DropdownMenuItem>
+								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
 					);
@@ -406,18 +406,18 @@ function AdminUsersPage() {
 					<DialogHeader>
 						<DialogTitle>Sessions for {sessionUser?.name}</DialogTitle>
 						<DialogDescription>
-							{sessionsQuery.isPending
+							{!adminSessions
 								? "Loading sessions..."
-								: `${sessionsQuery.data?.length ?? 0} active session(s)`}
+								: `${adminSessions.length} active session(s)`}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-3">
-						{sessionsQuery.isPending ? (
+						{!adminSessions ? (
 							<p className="text-sm text-muted-foreground py-4 text-center">Loading...</p>
-						) : sessionsQuery.data?.length === 0 ? (
+						) : adminSessions.length === 0 ? (
 							<p className="text-sm text-muted-foreground py-4 text-center">No active sessions.</p>
 						) : (
-							sessionsQuery.data?.map((session: { id: string; token: string; createdAt: Date; userAgent?: string | null; ipAddress?: string | null }) => (
+							adminSessions.map((session: { id: string; token: string; createdAt: Date; userAgent?: string | null; ipAddress?: string | null }) => (
 								<div
 									key={session.id}
 									className="flex items-center justify-between rounded-lg border p-3"
@@ -450,7 +450,7 @@ function AdminUsersPage() {
 						<Button
 							variant="destructive"
 							size="sm"
-							disabled={!sessionsQuery.data?.length || revokeAllSessionsMutation.isPending}
+							disabled={!adminSessions?.length || revokeAllSessionsMutation.isPending}
 							onClick={() => {
 								if (sessionUser) revokeAllSessionsMutation.mutate(sessionUser.id);
 							}}

@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { createAuth } from "./auth";
 import { createDb } from "../db/client";
-import { organization, member } from "../db/schema";
+import { organization, member } from "../db/schema/index";
 import { count, eq } from "drizzle-orm";
 
 const app = new Hono<{ Bindings: Env }>();
@@ -35,21 +35,22 @@ app.get("/api/admin/organizations", async (c) => {
 	}
 
 	const db = createDb(c.env.cf_open_db);
-	const orgs = await db
-		.select({
-			id: organization.id,
-			name: organization.name,
-			slug: organization.slug,
-			createdAt: organization.createdAt,
-			memberCount: count(member.id),
-		})
-		.from(organization)
-		.leftJoin(member, eq(member.organizationId, organization.id))
-		.groupBy(organization.id);
-
-	const [totalResult] = await db
-		.select({ total: count() })
-		.from(organization);
+	const [orgs, [totalResult]] = await Promise.all([
+		db
+			.select({
+				id: organization.id,
+				name: organization.name,
+				slug: organization.slug,
+				createdAt: organization.createdAt,
+				memberCount: count(member.id),
+			})
+			.from(organization)
+			.leftJoin(member, eq(member.organizationId, organization.id))
+			.groupBy(organization.id),
+		db
+			.select({ total: count() })
+			.from(organization),
+	]);
 
 	return c.json({ data: orgs, total: totalResult?.total ?? 0 });
 });

@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
-import { queryClient } from "@/main";
+import { queryClient } from "@/lib/query-client";
 import { toast } from "sonner";
 import {
 	Avatar,

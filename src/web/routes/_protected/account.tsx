@@ -26,7 +26,7 @@ import { KeyIcon, MonitorIcon, PlusIcon, SmartphoneIcon, TrashIcon, TriangleAler
 
 function ProfileSection({ session }: { session: NonNullable<ReturnType<typeof authClient.useSession>["data"]> }) {
 	const [name, setName] = useState(session.user.name ?? "");
-	const [email, setEmail] = useState(session.user.email);
+	const email = session.user.email;
 
 	const mutation = useMutation({
 		mutationFn: async () => {
@@ -53,7 +53,7 @@ function ProfileSection({ session }: { session: NonNullable<ReturnType<typeof au
 				</div>
 				<div className="grid gap-2">
 					<Label htmlFor="profile-email">Email</Label>
-					<Input id="profile-email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} disabled />
+					<Input id="profile-email" type="email" value={email} disabled />
 					<p className="text-xs text-muted-foreground">Email change is not supported here.</p>
 				</div>
 				<Button onClick={() => mutation.mutate()} disabled={mutation.isPending}>
@@ -115,7 +115,7 @@ function PasswordSection() {
 function TwoFactorSection({ session }: { session: NonNullable<ReturnType<typeof authClient.useSession>["data"]> }) {
 	const [step, setStep] = useState<"idle" | "enable" | "show-qr" | "verify">("idle");
 	const [password, setPassword] = useState("");
-	const [totpUri, setTotpUri] = useState("");
+	const totpUriRef = useRef("");
 	const [backupCodes, setBackupCodes] = useState<string[]>([]);
 	const [verifyCode, setVerifyCode] = useState("");
 	const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -123,10 +123,10 @@ function TwoFactorSection({ session }: { session: NonNullable<ReturnType<typeof 
 	const isEnabled = session.user.twoFactorEnabled;
 
 	useEffect(() => {
-		if (canvasRef.current && totpUri) {
-			QRCode.toCanvas(canvasRef.current, totpUri, { width: 200, margin: 2 });
+		if (canvasRef.current && totpUriRef.current) {
+			QRCode.toCanvas(canvasRef.current, totpUriRef.current, { width: 200, margin: 2 });
 		}
-	}, [totpUri]);
+	}, [step]);
 
 	const enableMutation = useMutation({
 		mutationFn: async () => {
@@ -136,7 +136,7 @@ function TwoFactorSection({ session }: { session: NonNullable<ReturnType<typeof 
 		},
 		onSuccess: (data) => {
 			if (data) {
-				setTotpUri(data.totpURI);
+				totpUriRef.current = data.totpURI;
 				setBackupCodes(data.backupCodes);
 				setStep("show-qr");
 			}
@@ -169,7 +169,7 @@ function TwoFactorSection({ session }: { session: NonNullable<ReturnType<typeof 
 			setStep("idle");
 			setPassword("");
 			setVerifyCode("");
-			setTotpUri("");
+			totpUriRef.current = "";
 			setBackupCodes([]);
 		},
 		onError: (err) => toast.error(err.message),
@@ -271,7 +271,7 @@ function TwoFactorSection({ session }: { session: NonNullable<ReturnType<typeof 
 						<Button onClick={() => verifyMutation.mutate()} disabled={verifyMutation.isPending || verifyCode.length !== 6}>
 							{verifyMutation.isPending ? "Verifying..." : "Verify and enable"}
 						</Button>
-						<Button variant="outline" onClick={() => { setStep("idle"); setPassword(""); setTotpUri(""); setBackupCodes([]); }}>
+						<Button variant="outline" onClick={() => { setStep("idle"); setPassword(""); totpUriRef.current = ""; setBackupCodes([]); }}>
 							Cancel
 						</Button>
 					</div>
@@ -395,7 +395,7 @@ function SessionsSection() {
 	const queryClient = useQueryClient();
 	const [revokeAllOpen, setRevokeAllOpen] = useState(false);
 
-	const sessionsQuery = useQuery({
+	const { data: sessions, isPending: sessionsIsPending } = useQuery({
 		queryKey: ["account", "sessions"],
 		queryFn: async () => {
 			const res = await authClient.listSessions();
@@ -431,7 +431,7 @@ function SessionsSection() {
 		onError: (err) => toast.error(err.message),
 	});
 
-	const sessions = sessionsQuery.data ?? [];
+	const sessionList = sessions ?? [];
 
 	return (
 		<Card>
@@ -441,7 +441,7 @@ function SessionsSection() {
 						<CardTitle>Sessions</CardTitle>
 						<CardDescription>Manage your active sessions.</CardDescription>
 					</div>
-					{sessions.length > 1 && (
+					{sessionList.length > 1 && (
 						<Button variant="outline" size="sm" onClick={() => setRevokeAllOpen(true)}>
 							Revoke all other sessions
 						</Button>
@@ -449,13 +449,13 @@ function SessionsSection() {
 				</div>
 			</CardHeader>
 			<CardContent>
-				{sessionsQuery.isPending ? (
+				{sessionsIsPending ? (
 					<p className="text-sm text-muted-foreground">Loading sessions...</p>
-				) : sessions.length === 0 ? (
+				) : sessionList.length === 0 ? (
 					<p className="text-sm text-muted-foreground">No active sessions.</p>
 				) : (
 					<div className="space-y-2">
-						{sessions.map((session: { id: string; token: string; userAgent?: string | null; createdAt: Date; isCurrent?: boolean }) => (
+						{sessionList.map((session: { id: string; token: string; userAgent?: string | null; createdAt: Date; isCurrent?: boolean }) => (
 							<div key={session.id} className="flex items-center justify-between rounded-md border p-3">
 								<div className="flex items-center gap-2">
 									{session.isCurrent ? <MonitorIcon className="size-4" /> : <SmartphoneIcon className="size-4 text-muted-foreground" />}

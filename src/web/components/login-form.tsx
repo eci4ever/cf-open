@@ -40,9 +40,7 @@ export function LoginForm({
 			if (error) {
 				// User cancelled the browser prompt — not an error
 				if (
-					error.message?.toLowerCase().includes("cancel") ||
-					error.code === "CANCELLED" ||
-					error.code === "USER_CANCELLED"
+					error.message?.toLowerCase().includes("cancel")
 				) {
 					setPasskeyLoading(false);
 					return;

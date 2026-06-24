@@ -5,7 +5,7 @@ import { twoFactor } from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { createDb } from "../db/client";
-import * as schema from "../db/schema";
+import * as schema from "../db/schema/index";
 
 export function createAuth(d1: D1Database) {
 	return betterAuth({
