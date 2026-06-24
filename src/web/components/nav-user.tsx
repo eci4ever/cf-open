@@ -30,6 +30,7 @@ import {
 	BellIcon,
 	LogOutIcon,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 export function NavUser({
 	user,
@@ -38,6 +39,7 @@ export function NavUser({
 		name: string;
 		email: string;
 		avatar: string;
+		role?: string | null;
 	};
 }) {
 	const navigate = useNavigate();
@@ -94,8 +96,9 @@ export function NavUser({
 									<div className="grid flex-1 text-left text-sm leading-tight">
 										<span className="truncate font-medium">{user.name}</span>
 										<span className="truncate text-xs">{user.email}</span>
-									</div>
-								</div>
+									</div>								{user.role === "admin" && (
+										<Badge variant="secondary" className="ml-auto">Admin</Badge>
+									)}								</div>
 							</DropdownMenuLabel>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
@@ -121,10 +124,12 @@ export function NavUser({
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem onClick={handleLogout}>
-							<LogOutIcon />
-							Log out
-						</DropdownMenuItem>
+						<DropdownMenuGroup>
+							<DropdownMenuItem onClick={handleLogout}>
+								<LogOutIcon />
+								Log out
+							</DropdownMenuItem>
+						</DropdownMenuGroup>
 					</DropdownMenuContent>
 				</DropdownMenu>
 			</SidebarMenuItem>

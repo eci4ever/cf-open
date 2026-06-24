@@ -98,6 +98,7 @@ export function AppSidebar({
 						name: session.user.name,
 						email: session.user.email,
 						avatar: session.user.image ?? "",
+						role: session.user.role,
 					}}
 				/>
 			</SidebarFooter>
