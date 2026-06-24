@@ -166,7 +166,7 @@ function UserProfileCard({
 						size="sm"
 						variant="outline"
 						className="w-full"
-						onClick={() => navigate({ to: "/verify-email" })}
+						onClick={() => navigate({ to: "/verify-email", search: { token: undefined } })}
 					>
 						<MailCheckIcon className="size-4" />
 						Verify your email
@@ -540,7 +540,7 @@ function DashboardPage() {
 					Account Settings
 				</Link>
 				{!session.user.emailVerified && (
-					<Link to="/verify-email" className={buttonVariants({ variant: "outline", size: "sm" })}>
+					<Link to="/verify-email" search={{ token: undefined }} className={buttonVariants({ variant: "outline", size: "sm" })}>
 						<MailCheckIcon className="size-4" />
 						Verify Email
 					</Link>
