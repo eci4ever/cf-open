@@ -21,6 +21,11 @@ export function createAuth(env: Env) {
 			provider: "sqlite",
 			schema,
 		}),
+		advanced: {
+			ipAddress: {
+				ipAddressHeaders: ["cf-connecting-ip", "x-forwarded-for", "x-real-ip"],
+			},
+		},
 		rateLimit: {
 			enabled: true,
 			window: 60,
