@@ -48,6 +48,10 @@ Temporary Items
 ### macOS Patch ###
 # iCloud generated files
 *.icloud
+*.http
+*.github*
+*.agents*
+skills-lock.json
 
 ### Node ###
 # Logs
