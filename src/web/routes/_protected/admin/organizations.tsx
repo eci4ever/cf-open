@@ -1,13 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
 import { DataTable } from "@/components/shared/data-table";
 import { PageLayout } from "@/components/shared/page-layout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
+import { CreateOrganizationDialog } from "@/components/create-organization-dialog";
 
 type Organization = {
 	id: string;
@@ -19,6 +20,7 @@ type Organization = {
 
 function AdminOrganizationsPage() {
 	const { data: session } = authClient.useSession();
+	const [createOpen, setCreateOpen] = useState(false);
 
 	const { data, isPending } = useQuery({
 		queryKey: ["admin", "organizations"],
@@ -80,7 +82,7 @@ function AdminOrganizationsPage() {
 						Manage platform organizations.
 					</p>
 				</div>
-				<Button>
+				<Button onClick={() => setCreateOpen(true)}>
 					<PlusIcon className="size-4" />
 					New Organization
 				</Button>
@@ -93,6 +95,7 @@ function AdminOrganizationsPage() {
 				searchPlaceholder="Search organizations..."
 				total={data?.total}
 			/>
+			<CreateOrganizationDialog open={createOpen} onOpenChange={setCreateOpen} />
 		</PageLayout>
 	);
 }

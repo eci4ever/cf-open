@@ -7,7 +7,7 @@ import { passkeyClient } from "@better-auth/passkey/client";
 export const authClient = createAuthClient({
 	plugins: [
 		adminClient(),
-		organizationClient(),
+		organizationClient({ teams: { enabled: true } }),
 		twoFactorClient(),
 		passkeyClient(),
 	],

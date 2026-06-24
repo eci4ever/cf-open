@@ -4,8 +4,10 @@ import { organization } from "better-auth/plugins";
 import { twoFactor } from "better-auth/plugins";
 import { passkey } from "@better-auth/passkey";
 import { drizzleAdapter } from "@better-auth/drizzle-adapter";
+import { eq, asc } from "drizzle-orm";
 import { createDb } from "../db/client";
 import * as schema from "../db/schema/index";
+import { member, organization as orgTable } from "../db/schema/index";
 import {
 	sendEmail,
 	makeEmailTemplate,
@@ -127,6 +129,39 @@ export function createAuth(env: Env) {
 			twoFactor(),
 			passkey(),
 		],
+		databaseHooks: {
+			session: {
+				create: {
+					before: async (session) => {
+						// If the session already has an active org, keep it
+						if (session.activeOrganizationId) {
+							return { data: session };
+						}
+						// Find the user's first organization (by membership, oldest first)
+						const db = createDb(env.DB);
+						const [firstMember] = await db
+							.select({
+								organizationId: member.organizationId,
+							})
+							.from(member)
+							.where(eq(member.userId, session.userId))
+							.orderBy(asc(member.createdAt))
+							.limit(1);
+
+						if (!firstMember) {
+							return { data: session };
+						}
+
+						return {
+							data: {
+								...session,
+								activeOrganizationId: firstMember.organizationId,
+							},
+						};
+					},
+				},
+			},
+		},
 	});
 }
 

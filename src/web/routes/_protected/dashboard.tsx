@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import {
 	Card,
@@ -14,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CreateOrganizationDialog } from "@/components/create-organization-dialog";
 import {
 	MailCheckIcon,
 	MailIcon,
@@ -182,6 +184,7 @@ function OrganizationCard() {
 		isPending: orgPending,
 	} = authClient.useActiveOrganization();
 	const { data: activeMember } = authClient.useActiveMember();
+	const [createOpen, setCreateOpen] = useState(false);
 
 	if (orgPending) {
 		return (
@@ -200,28 +203,35 @@ function OrganizationCard() {
 
 	if (!activeOrg) {
 		return (
-			<Card>
-				<CardHeader>
-					<CardTitle>Your Organization</CardTitle>
-					<CardDescription>
-						You are not part of any organization yet.
-					</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<div className="flex flex-col items-center gap-3 py-4 text-center">
-						<div className="flex size-12 items-center justify-center rounded-lg bg-muted">
-							<Building2Icon className="size-6 text-muted-foreground" />
+			<>
+				<Card>
+					<CardHeader>
+						<CardTitle>Your Organization</CardTitle>
+						<CardDescription>
+							You are not part of any organization yet.
+						</CardDescription>
+					</CardHeader>
+					<CardContent>
+						<div className="flex flex-col items-center gap-3 py-4 text-center">
+							<div className="flex size-12 items-center justify-center rounded-lg bg-muted">
+								<Building2Icon className="size-6 text-muted-foreground" />
+							</div>
+							<p className="text-sm text-muted-foreground">
+								Create or join an organization to get started.
+							</p>
+							<Button
+								size="sm"
+								variant="outline"
+								onClick={() => setCreateOpen(true)}
+							>
+								<PlusIcon className="size-4" />
+								Create organization
+							</Button>
 						</div>
-						<p className="text-sm text-muted-foreground">
-							Create or join an organization to get started.
-						</p>
-						<Button size="sm" variant="outline">
-							<PlusIcon className="size-4" />
-							Create organization
-						</Button>
-					</div>
-				</CardContent>
-			</Card>
+					</CardContent>
+				</Card>
+				<CreateOrganizationDialog open={createOpen} onOpenChange={setCreateOpen} />
+			</>
 		);
 	}
 
