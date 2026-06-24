@@ -30,6 +30,7 @@ import {
 import {
     DropdownMenu,
     DropdownMenuContent,
+    DropdownMenuGroup,
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
@@ -224,15 +225,17 @@ function MembersCard({
                                 <MoreHorizontalIcon className="size-4" />
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Change role</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => onRoleChange(m, "admin")}>
-                                    <ShieldIcon className="size-4" />
-                                    Admin
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => onRoleChange(m, "member")}>
-                                    <ShieldIcon className="size-4" />
-                                    Member
-                                </DropdownMenuItem>
+                                <DropdownMenuGroup>
+                                    <DropdownMenuLabel>Change role</DropdownMenuLabel>
+                                    <DropdownMenuItem onClick={() => onRoleChange(m, "admin")}>
+                                        <ShieldIcon className="size-4" />
+                                        Admin
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => onRoleChange(m, "member")}>
+                                        <ShieldIcon className="size-4" />
+                                        Member
+                                    </DropdownMenuItem>
+                                </DropdownMenuGroup>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                     className="text-destructive"

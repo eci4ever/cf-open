@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
@@ -12,7 +12,7 @@ import {
 import { PageLayout } from "@/components/shared/page-layout";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreateOrganizationDialog } from "@/components/create-organization-dialog";
@@ -61,6 +61,7 @@ function UserProfileCard({
 }: {
 	session: NonNullable<ReturnType<typeof authClient.useSession>["data"]>;
 }) {
+	const navigate = useNavigate();
 	const user = session.user;
 	const isVerified = user.emailVerified;
 	const is2FAEnabled = user.twoFactorEnabled;
@@ -165,7 +166,7 @@ function UserProfileCard({
 						size="sm"
 						variant="outline"
 						className="w-full"
-						render={<Link to="/verify-email" />}
+						onClick={() => navigate({ to: "/verify-email" })}
 					>
 						<MailCheckIcon className="size-4" />
 						Verify your email
@@ -399,6 +400,7 @@ function SecuritySummaryCard({
 }: {
 	session: NonNullable<ReturnType<typeof authClient.useSession>["data"]>;
 }) {
+	const navigate = useNavigate();
 	const is2FAEnabled = session.user.twoFactorEnabled;
 	const { data: passkeys } = authClient.useListPasskeys();
 	const passkeyCount = passkeys?.length ?? 0;
@@ -459,7 +461,7 @@ function SecuritySummaryCard({
 					variant="outline"
 					size="sm"
 					className="w-full"
-					render={<Link to="/account" />}
+					onClick={() => navigate({ to: "/account" })}
 				>
 					Manage security
 					<ChevronRightIcon className="size-4" />
@@ -534,28 +536,20 @@ function DashboardPage() {
 
 			{/* Quick actions */}
 			<div className="flex flex-wrap gap-2">
-				<Button variant="outline" size="sm" render={<Link to="/account" />}>
+				<Link to="/account" className={buttonVariants({ variant: "outline", size: "sm" })}>
 					Account Settings
-				</Button>
+				</Link>
 				{!session.user.emailVerified && (
-					<Button
-						variant="outline"
-						size="sm"
-						render={<Link to="/verify-email" />}
-					>
+					<Link to="/verify-email" className={buttonVariants({ variant: "outline", size: "sm" })}>
 						<MailCheckIcon className="size-4" />
 						Verify Email
-					</Button>
+					</Link>
 				)}
 				{!session.user.twoFactorEnabled && (
-					<Button
-						variant="outline"
-						size="sm"
-						render={<Link to="/account" />}
-					>
+					<Link to="/account" className={buttonVariants({ variant: "outline", size: "sm" })}>
 						<ShieldCheckIcon className="size-4" />
 						Enable 2FA
-					</Button>
+					</Link>
 				)}
 			</div>
 		</PageLayout>
