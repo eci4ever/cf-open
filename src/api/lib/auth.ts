@@ -9,6 +9,7 @@ import * as schema from "../db/schema/index";
 import {
 	sendEmail,
 	makeEmailTemplate,
+	buildWebUrl,
 } from "../server/email/email.service";
 import type { EmailEnv } from "../server/email/email.types";
 
@@ -23,11 +24,16 @@ export function createAuth(env: Env) {
 		emailAndPassword: {
 			enabled: true,
 			sendResetPassword: async ({ user, url }) => {
+				// Extract token from the Better Auth URL and build a direct frontend link
+				const token = new URL(url).pathname.split("/").pop();
+				const resetUrl = token
+					? buildWebUrl(emailEnv, `/reset-password?token=${token}`)
+					: url;
 				await sendEmail(emailEnv, {
 					to: user.email,
 					template: makeEmailTemplate(emailEnv, "password-reset", {
 						recipientName: user.name,
-						actionUrl: url,
+						actionUrl: resetUrl,
 					}),
 				});
 			},
