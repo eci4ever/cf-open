@@ -54,7 +54,7 @@
 		"db:migrate:local": "wrangler d1 migrations apply cf-open-db --local",
 		"db:migrate": "wrangler d1 migrations apply cf-open-db --remote",
 		"db:studio": "drizzle-kit studio",
-		"deploy": "wrangler deploy",
+		"deploy": "vite build && wrangler deploy",
 		"dev": "vite",
 		"lint": "eslint .",
 		"preview": "npm run build && vite preview"

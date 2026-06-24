@@ -1,16 +1,20 @@
-import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
+import { useEffect } from "react";
+import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
 import { authClient } from "@/lib/auth-client";
 import { Spinner } from "@/components/ui/spinner";
 
 function ProtectedLayout() {
+	const navigate = useNavigate();
 	const { data: session, isPending } = authClient.useSession();
 
-	if (isPending) {
-		return <Spinner className="min-h-screen" />;
-	}
+	useEffect(() => {
+		if (!isPending && !session) {
+			navigate({ to: "/login" });
+		}
+	}, [isPending, session, navigate]);
 
-	if (!session) {
-		throw redirect({ to: "/login" });
+	if (isPending || !session) {
+		return <Spinner className="min-h-screen" />;
 	}
 
 	return <Outlet />;
