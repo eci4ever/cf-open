@@ -1,5 +1,6 @@
 import { NavUser } from "@/components/nav-user";
 import { OrganizationsSwitcher } from "@/components/organizations-switcher";
+import { authClient } from "@/lib/auth-client";
 import {
 	Sidebar,
 	SidebarContent,
@@ -12,7 +13,7 @@ import {
 	SidebarMenuItem,
 	SidebarRail,
 } from "@/components/ui/sidebar";
-import { LayoutDashboardIcon, UsersIcon, Building2Icon, CreditCardIcon, CalendarCheckIcon } from "lucide-react";
+import { LayoutDashboardIcon, UsersIcon, Building2Icon, CreditCardIcon, CalendarCheckIcon, SettingsIcon, UsersRoundIcon } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
 export function AppSidebar({
@@ -23,6 +24,9 @@ export function AppSidebar({
 		user: { name: string; email: string; image?: string | null; role?: string | null };
 	};
 }) {
+	const { data: activeMember } = authClient.useActiveMember();
+	const isOrgOwner = activeMember?.role === "owner";
+
 	return (
 		<Sidebar collapsible="icon" {...props}>
 			<SidebarHeader>
@@ -43,6 +47,31 @@ export function AppSidebar({
 						</SidebarMenuItem>
 					</SidebarMenu>
 				</SidebarGroup>
+				{isOrgOwner ? (
+					<SidebarGroup>
+						<SidebarGroupLabel className="mb-1">Platform</SidebarGroupLabel>
+						<SidebarMenu>
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									tooltip="Organization"
+									render={<Link to="/organization" />}
+								>
+									<SettingsIcon />
+									<span>Organization</span>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+							<SidebarMenuItem>
+								<SidebarMenuButton
+									tooltip="Team"
+									render={<Link to="/team" />}
+								>
+									<UsersRoundIcon />
+									<span>Team</span>
+								</SidebarMenuButton>
+							</SidebarMenuItem>
+						</SidebarMenu>
+					</SidebarGroup>
+				) : null}
 				{session.user.role === "admin" ? (
 					<SidebarGroup>
 						<SidebarGroupLabel className="mb-1">Platform Admin</SidebarGroupLabel>

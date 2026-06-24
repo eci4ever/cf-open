@@ -18,6 +18,8 @@ import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProtectedTeamRouteImport } from './routes/_protected/team'
+import { Route as ProtectedOrganizationRouteImport } from './routes/_protected/organization'
 import { Route as ProtectedDashboardRouteImport } from './routes/_protected/dashboard'
 import { Route as ProtectedAdminRouteImport } from './routes/_protected/admin'
 import { Route as ProtectedAccountRouteImport } from './routes/_protected/account'
@@ -70,6 +72,16 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProtectedTeamRoute = ProtectedTeamRouteImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedOrganizationRoute = ProtectedOrganizationRouteImport.update({
+  id: '/organization',
+  path: '/organization',
+  getParentRoute: () => ProtectedRoute,
+} as any)
 const ProtectedDashboardRoute = ProtectedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -121,6 +133,8 @@ export interface FileRoutesByFullPath {
   '/account': typeof ProtectedAccountRoute
   '/admin': typeof ProtectedAdminRouteWithChildren
   '/dashboard': typeof ProtectedDashboardRoute
+  '/organization': typeof ProtectedOrganizationRoute
+  '/team': typeof ProtectedTeamRoute
   '/admin/organizations': typeof ProtectedAdminOrganizationsRoute
   '/admin/subscriptions': typeof ProtectedAdminSubscriptionsRoute
   '/admin/users': typeof ProtectedAdminUsersRoute
@@ -138,6 +152,8 @@ export interface FileRoutesByTo {
   '/account': typeof ProtectedAccountRoute
   '/admin': typeof ProtectedAdminRouteWithChildren
   '/dashboard': typeof ProtectedDashboardRoute
+  '/organization': typeof ProtectedOrganizationRoute
+  '/team': typeof ProtectedTeamRoute
   '/admin/organizations': typeof ProtectedAdminOrganizationsRoute
   '/admin/subscriptions': typeof ProtectedAdminSubscriptionsRoute
   '/admin/users': typeof ProtectedAdminUsersRoute
@@ -157,6 +173,8 @@ export interface FileRoutesById {
   '/_protected/account': typeof ProtectedAccountRoute
   '/_protected/admin': typeof ProtectedAdminRouteWithChildren
   '/_protected/dashboard': typeof ProtectedDashboardRoute
+  '/_protected/organization': typeof ProtectedOrganizationRoute
+  '/_protected/team': typeof ProtectedTeamRoute
   '/_protected/admin/organizations': typeof ProtectedAdminOrganizationsRoute
   '/_protected/admin/subscriptions': typeof ProtectedAdminSubscriptionsRoute
   '/_protected/admin/users': typeof ProtectedAdminUsersRoute
@@ -176,6 +194,8 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/dashboard'
+    | '/organization'
+    | '/team'
     | '/admin/organizations'
     | '/admin/subscriptions'
     | '/admin/users'
@@ -193,6 +213,8 @@ export interface FileRouteTypes {
     | '/account'
     | '/admin'
     | '/dashboard'
+    | '/organization'
+    | '/team'
     | '/admin/organizations'
     | '/admin/subscriptions'
     | '/admin/users'
@@ -211,6 +233,8 @@ export interface FileRouteTypes {
     | '/_protected/account'
     | '/_protected/admin'
     | '/_protected/dashboard'
+    | '/_protected/organization'
+    | '/_protected/team'
     | '/_protected/admin/organizations'
     | '/_protected/admin/subscriptions'
     | '/_protected/admin/users'
@@ -294,6 +318,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_protected/team': {
+      id: '/_protected/team'
+      path: '/team'
+      fullPath: '/team'
+      preLoaderRoute: typeof ProtectedTeamRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
+    '/_protected/organization': {
+      id: '/_protected/organization'
+      path: '/organization'
+      fullPath: '/organization'
+      preLoaderRoute: typeof ProtectedOrganizationRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/_protected/dashboard': {
       id: '/_protected/dashboard'
       path: '/dashboard'
@@ -366,6 +404,8 @@ interface ProtectedRouteChildren {
   ProtectedAccountRoute: typeof ProtectedAccountRoute
   ProtectedAdminRoute: typeof ProtectedAdminRouteWithChildren
   ProtectedDashboardRoute: typeof ProtectedDashboardRoute
+  ProtectedOrganizationRoute: typeof ProtectedOrganizationRoute
+  ProtectedTeamRoute: typeof ProtectedTeamRoute
   ProtectedServicesAttendanceRoute: typeof ProtectedServicesAttendanceRoute
 }
 
@@ -373,6 +413,8 @@ const ProtectedRouteChildren: ProtectedRouteChildren = {
   ProtectedAccountRoute: ProtectedAccountRoute,
   ProtectedAdminRoute: ProtectedAdminRouteWithChildren,
   ProtectedDashboardRoute: ProtectedDashboardRoute,
+  ProtectedOrganizationRoute: ProtectedOrganizationRoute,
+  ProtectedTeamRoute: ProtectedTeamRoute,
   ProtectedServicesAttendanceRoute: ProtectedServicesAttendanceRoute,
 }
 
