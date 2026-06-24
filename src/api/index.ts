@@ -19,7 +19,7 @@ const app = new Hono<{
 app.use(
 	"/api/auth/*",
 	cors({
-		origin: ["http://localhost:5173", "https://cf-open.eci4ever.workers.dev"],
+		origin: ["http://localhost:5173", "https://cf-open.eci4ever.workers.dev", "https://itime.nimfi.dev"],
 		allowHeaders: ["Content-Type", "Authorization"],
 		allowMethods: ["POST", "GET", "OPTIONS"],
 		exposeHeaders: ["Content-Length"],
