@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import {
 	flexRender,
 	getCoreRowModel,
@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
@@ -34,7 +35,8 @@ interface DataTableProps<TData> {
 	columns: ColumnDef<TData>[];
 	data: TData[];
 	isPending?: boolean;
-	searchKey?: string;
+	searchPlaceholder?: string;
+	toolbar?: ReactNode;
 	total?: number;
 }
 
@@ -42,7 +44,8 @@ export function DataTable<TData>({
 	columns,
 	data,
 	isPending,
-	searchKey,
+	searchPlaceholder = "Search...",
+	toolbar,
 	total,
 }: DataTableProps<TData>) {
 	const [sorting, setSorting] = useState<SortingState>([]);
@@ -74,17 +77,23 @@ export function DataTable<TData>({
 
 	return (
 		<div className="space-y-4">
-			{searchKey ? (
-				<div className="relative max-w-sm">
+			{/* Toolbar */}
+			<div className="flex items-center justify-between gap-2">
+				<div className="relative max-w-sm flex-1">
 					<SearchIcon className="absolute left-2.5 top-2.5 size-4 text-muted-foreground" />
 					<Input
-						placeholder="Search..."
+						placeholder={searchPlaceholder}
 						value={globalFilter}
 						onChange={(e) => setGlobalFilter(e.target.value)}
 						className="pl-8"
 					/>
 				</div>
-			) : null}
+				<div className="flex items-center gap-2">
+					{toolbar}
+				</div>
+			</div>
+
+			{/* Table Card */}
 			<div className="rounded-md border">
 				<Table>
 					<TableHeader>
@@ -95,7 +104,7 @@ export function DataTable<TData>({
 										{header.isPlaceholder ? null : (
 											<button
 												type="button"
-												className="flex items-center gap-1 font-medium"
+												className="flex items-center gap-1 text-muted-foreground font-medium"
 												onClick={header.column.getToggleSortingHandler()}
 											>
 												{flexRender(
@@ -112,14 +121,15 @@ export function DataTable<TData>({
 					</TableHeader>
 					<TableBody>
 						{isPending ? (
-							<TableRow>
-								<TableCell
-									colSpan={columns.length}
-									className="h-32 text-center text-muted-foreground"
-								>
-									Loading...
-								</TableCell>
-							</TableRow>
+							Array.from({ length: 5 }).map((_, i) => (
+								<TableRow key={`skeleton-${i}`}>
+									{columns.map((_, j) => (
+										<TableCell key={`skeleton-${i}-${j}`}>
+											<Skeleton className="h-6 w-full" />
+										</TableCell>
+									))}
+								</TableRow>
+							))
 						) : table.getRowModel().rows.length ? (
 							table.getRowModel().rows.map((row) => (
 								<TableRow key={row.id}>
@@ -146,62 +156,70 @@ export function DataTable<TData>({
 					</TableBody>
 				</Table>
 			</div>
-			<div className="flex items-center justify-between">
+			{/* Pagination */}
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 				<p className="text-sm text-muted-foreground">
 					{total !== undefined
-						? `Total ${total}`
+						? `${total} total`
 						: `${table.getFilteredRowModel().rows.length} row(s)`}
 				</p>
-				<div className="flex items-center gap-2">
-					<div className="flex items-center gap-1">
-						<Button
-							variant="outline"
-							size="icon"
-							onClick={() => table.setPageIndex(0)}
-							disabled={!table.getCanPreviousPage()}
+				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2">
+					<span className="text-sm text-muted-foreground">
+						Page {table.getState().pagination.pageIndex + 1} of{" "}
+						{table.getPageCount() || 1}
+					</span>
+					<div className="flex items-center justify-between gap-1 sm:justify-start">
+						<div className="flex items-center gap-1">
+							<Button
+								variant="outline"
+								size="icon"
+								onClick={() => table.setPageIndex(0)}
+								disabled={!table.getCanPreviousPage()}
+								aria-label="First page"
+							>
+								<ChevronsLeftIcon className="size-4" />
+							</Button>
+							<Button
+								variant="outline"
+								size="icon"
+								onClick={() => table.previousPage()}
+								disabled={!table.getCanPreviousPage()}
+								aria-label="Previous page"
+							>
+								<ChevronLeftIcon className="size-4" />
+							</Button>
+							<Button
+								variant="outline"
+								size="icon"
+								onClick={() => table.nextPage()}
+								disabled={!table.getCanNextPage()}
+								aria-label="Next page"
+							>
+								<ChevronRightIcon className="size-4" />
+							</Button>
+							<Button
+								variant="outline"
+								size="icon"
+								onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+								disabled={!table.getCanNextPage()}
+								aria-label="Last page"
+							>
+								<ChevronsRightIcon className="size-4" />
+							</Button>
+						</div>
+						<select
+							className="h-9 rounded-md border border-input bg-background px-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+							value={table.getState().pagination.pageSize}
+							onChange={(e) => table.setPageSize(Number(e.target.value))}
+							aria-label="Rows per page"
 						>
-							<ChevronsLeftIcon className="size-4" />
-						</Button>
-						<Button
-							variant="outline"
-							size="icon"
-							onClick={() => table.previousPage()}
-							disabled={!table.getCanPreviousPage()}
-						>
-							<ChevronLeftIcon className="size-4" />
-						</Button>
-						<span className="flex items-center gap-1 px-2 text-sm tabular-nums">
-							{table.getState().pagination.pageIndex + 1} /{" "}
-							{table.getPageCount()}
-						</span>
-						<Button
-							variant="outline"
-							size="icon"
-							onClick={() => table.nextPage()}
-							disabled={!table.getCanNextPage()}
-						>
-							<ChevronRightIcon className="size-4" />
-						</Button>
-						<Button
-							variant="outline"
-							size="icon"
-							onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-							disabled={!table.getCanNextPage()}
-						>
-							<ChevronsRightIcon className="size-4" />
-						</Button>
+							{[10, 20, 30, 50].map((size) => (
+								<option key={size} value={size}>
+									{size} / page
+								</option>
+							))}
+						</select>
 					</div>
-					<select
-						className="h-9 rounded-md border border-input bg-background px-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-						value={table.getState().pagination.pageSize}
-						onChange={(e) => table.setPageSize(Number(e.target.value))}
-					>
-						{[10, 20, 30, 50].map((size) => (
-							<option key={size} value={size}>
-								{size} / page
-							</option>
-						))}
-					</select>
 				</div>
 			</div>
 		</div>

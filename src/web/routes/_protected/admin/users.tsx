@@ -2,14 +2,15 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo, useCallback } from "react";
 import type { ColumnDef } from "@tanstack/react-table";
-import { MoreHorizontalIcon, TriangleAlertIcon, TrashIcon, MonitorIcon } from "lucide-react";
+import { MoreHorizontalIcon, TriangleAlertIcon, TrashIcon, MonitorIcon, UserPlusIcon, PencilIcon } from "lucide-react";
 import { toast } from "sonner";
 
 import { authClient } from "@/lib/auth-client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
 	Select,
 	SelectContent,
@@ -45,6 +46,12 @@ import {
 } from "@/components/ui/dialog";
 import { DataTable } from "@/components/shared/data-table";
 import { PageLayout } from "@/components/shared/page-layout";
+import {
+	Field,
+	FieldDescription,
+	FieldGroup,
+	FieldLabel,
+} from "@/components/ui/field";
 
 type User = {
 	id: string;
@@ -70,6 +77,11 @@ function AdminUsersPage() {
 	const [editEmail, setEditEmail] = useState("");
 	const [editRole, setEditRole] = useState<"user" | "admin">("user");
 	const [sessionUser, setSessionUser] = useState<User | null>(null);
+	const [createOpen, setCreateOpen] = useState(false);
+	const [createName, setCreateName] = useState("");
+	const [createEmail, setCreateEmail] = useState("");
+	const [createPassword, setCreatePassword] = useState("");
+	const [createRole, setCreateRole] = useState<"user" | "admin">("user");
 
 	const { data, isPending } = useQuery({
 		queryKey: ["admin", "users"],
@@ -137,6 +149,29 @@ function AdminUsersPage() {
 			setEditUser(null);
 		},
 		onError: () => toast.error("Failed to update user"),
+	});
+
+	const createUserMutation = useMutation({
+		mutationFn: async () => {
+			const res = await authClient.admin.createUser({
+				email: createEmail,
+				password: createPassword,
+				name: createName,
+				role: createRole,
+			});
+			if (res.error) throw new Error(res.error.message ?? "Failed to create user");
+			return res;
+		},
+		onSuccess: () => {
+			toast.success("User created");
+			invalidate();
+			setCreateOpen(false);
+			setCreateName("");
+			setCreateEmail("");
+			setCreatePassword("");
+			setCreateRole("user");
+		},
+		onError: (err) => toast.error(err.message),
 	});
 
 	const { data: adminSessions, refetch: refetchAdminSessions } = useQuery({
@@ -219,7 +254,7 @@ function AdminUsersPage() {
 
 					return (
 						<DropdownMenu>
-							<DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}>
+							<DropdownMenuTrigger render={<Button variant="ghost" size="icon" aria-label="Open actions" />}>
 								<MoreHorizontalIcon className="size-4" />
 							</DropdownMenuTrigger>
 							<DropdownMenuContent align="end">
@@ -274,7 +309,6 @@ function AdminUsersPage() {
 	const users = useMemo(() => (data?.users ?? []) as User[], [data]);
 
 	const selectedUser = confirm?.user;
-	const actionVerb = confirm?.action === "delete" ? "Delete" : confirm?.action === "ban" ? "Ban" : "Unban";
 
 	const handleConfirm = () => {
 		if (!confirm) return;
@@ -295,15 +329,25 @@ function AdminUsersPage() {
 	return (
 		<>
 			<PageLayout session={session!} title="Users">
-				<div>
-					<h1 className="text-2xl font-semibold tracking-tight">Users</h1>
-					<p className="text-sm text-muted-foreground">Manage platform users.</p>
+				{/* Page Header */}
+				<div className="flex items-center justify-between">
+					<div>
+						<h1 className="text-2xl font-semibold tracking-tight">Users</h1>
+						<p className="text-sm text-muted-foreground">
+							Manage platform users.
+						</p>
+					</div>
+					<Button onClick={() => setCreateOpen(true)}>
+						<UserPlusIcon className="size-4" />
+						Add User
+					</Button>
 				</div>
+
 				<DataTable
 					columns={columns}
 					data={users}
 					isPending={isPending}
-					searchKey="name"
+					searchPlaceholder="Search users..."
 					total={data?.total}
 				/>
 			</PageLayout>
@@ -320,14 +364,14 @@ function AdminUsersPage() {
 							</AlertDialogMedia>
 						)}
 						<AlertDialogTitle>
-							{actionVerb} {selectedUser?.name}?
+							{confirm?.action === "delete" ? "Delete user" : confirm?.action === "ban" ? "Ban user" : "Unban user"}
 						</AlertDialogTitle>
 						<AlertDialogDescription>
 							{confirm?.action === "delete"
-								? "This will permanently remove the user and all associated data. This action cannot be undone."
+								? `This will permanently remove ${selectedUser?.name} and all associated data. This action cannot be undone.`
 								: confirm?.action === "ban"
-									? "This will prevent the user from signing in. They can be unbanned later."
-									: "This will restore the user's ability to sign in."}
+									? `${selectedUser?.name} will no longer be able to sign in. They can be unbanned later.`
+									: `${selectedUser?.name} will be able to sign in again.`}
 						</AlertDialogDescription>
 					</AlertDialogHeader>
 					<AlertDialogFooter>
@@ -336,7 +380,7 @@ function AdminUsersPage() {
 							variant={confirm?.action === "delete" ? "destructive" : "default"}
 							onClick={handleConfirm}
 						>
-							{actionVerb}
+							{confirm?.action === "delete" ? "Delete" : confirm?.action === "ban" ? "Ban" : "Unban"}
 						</AlertDialogAction>
 					</AlertDialogFooter>
 				</AlertDialogContent>
@@ -345,29 +389,44 @@ function AdminUsersPage() {
 			<Dialog open={editUser !== null} onOpenChange={(open) => { if (!open) setEditUser(null); }}>
 				<DialogContent>
 					<DialogHeader>
-						<DialogTitle>Edit user</DialogTitle>
+						<DialogTitle className="flex items-center gap-2">
+							<PencilIcon className="size-4 text-muted-foreground" />
+							Edit user
+						</DialogTitle>
 						<DialogDescription>Update user details and role.</DialogDescription>
 					</DialogHeader>
-					<div className="grid gap-4">
-						<div className="grid gap-2">
-							<Label htmlFor="edit-name">Name</Label>
+					{editUser && (
+						<div className="flex items-center gap-3 rounded-lg border p-3">
+							<Avatar>
+								<AvatarFallback>{editUser.name?.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)}</AvatarFallback>
+							</Avatar>
+							<div>
+								<p className="text-sm font-medium">{editUser.name}</p>
+								<p className="text-xs text-muted-foreground">{editUser.email}</p>
+							</div>
+						</div>
+					)}
+					<FieldGroup>
+						<Field>
+							<FieldLabel htmlFor="edit-name">Name</FieldLabel>
 							<Input
 								id="edit-name"
 								value={editName}
 								onChange={(e) => setEditName(e.target.value)}
 							/>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="edit-email">Email</Label>
+						</Field>
+						<Field>
+							<FieldLabel htmlFor="edit-email">Email</FieldLabel>
 							<Input
 								id="edit-email"
 								type="email"
 								value={editEmail}
-								onChange={(e) => setEditEmail(e.target.value)}
+								disabled
 							/>
-						</div>
-						<div className="grid gap-2">
-							<Label htmlFor="edit-role">Role</Label>
+							<FieldDescription>Email cannot be changed.</FieldDescription>
+						</Field>
+						<Field>
+							<FieldLabel htmlFor="edit-role">Role</FieldLabel>
 							<Select value={editRole} onValueChange={(v) => setEditRole(v ?? "user")}>
 								<SelectTrigger id="edit-role">
 									<SelectValue />
@@ -377,8 +436,9 @@ function AdminUsersPage() {
 									<SelectItem value="admin">Admin</SelectItem>
 								</SelectContent>
 							</Select>
-						</div>
-					</div>
+							<FieldDescription>Admins have full access to all settings and users.</FieldDescription>
+						</Field>
+					</FieldGroup>
 					<DialogFooter>
 						<Button variant="outline" onClick={() => setEditUser(null)}>
 							Cancel
@@ -404,16 +464,30 @@ function AdminUsersPage() {
 			<Dialog open={sessionUser !== null} onOpenChange={(open) => { if (!open) setSessionUser(null); }}>
 				<DialogContent className="sm:max-w-md">
 					<DialogHeader>
-						<DialogTitle>Sessions for {sessionUser?.name}</DialogTitle>
+						<DialogTitle className="flex items-center gap-2">
+							<MonitorIcon className="size-4 text-muted-foreground" />
+							Sessions for {sessionUser?.name}
+						</DialogTitle>
 						<DialogDescription>
 							{!adminSessions
 								? "Loading sessions..."
-								: `${adminSessions.length} active session(s)`}
+								: adminSessions.length === 0
+									? "No active sessions."
+									: `${adminSessions.length} active session${adminSessions.length === 1 ? "" : "s"}`}
 						</DialogDescription>
 					</DialogHeader>
 					<div className="grid gap-3">
 						{!adminSessions ? (
-							<p className="text-sm text-muted-foreground py-4 text-center">Loading...</p>
+							Array.from({ length: 3 }).map((_, i) => (
+								<div key={`session-skeleton-${i}`} className="flex items-center gap-3 rounded-lg border p-3">
+									<Skeleton className="size-8 rounded-full" />
+									<div className="flex-1 space-y-2">
+										<Skeleton className="h-4 w-32" />
+										<Skeleton className="h-3 w-48" />
+									</div>
+									<Skeleton className="size-8" />
+								</div>
+							))
 						) : adminSessions.length === 0 ? (
 							<p className="text-sm text-muted-foreground py-4 text-center">No active sessions.</p>
 						) : (
@@ -439,6 +513,7 @@ function AdminUsersPage() {
 										size="icon"
 										onClick={() => revokeSessionMutation.mutate(session.token)}
 										disabled={revokeSessionMutation.isPending}
+										aria-label="Revoke session"
 									>
 										<TrashIcon className="size-4 text-destructive" />
 									</Button>
@@ -459,6 +534,75 @@ function AdminUsersPage() {
 						</Button>
 						<Button variant="outline" onClick={() => setSessionUser(null)}>
 							Close
+						</Button>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
+
+			{/* Create User Dialog */}
+			<Dialog open={createOpen} onOpenChange={(open) => { if (!open) setCreateOpen(false); }}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle className="flex items-center gap-2">
+							<UserPlusIcon className="size-4 text-muted-foreground" />
+							Add user
+						</DialogTitle>
+						<DialogDescription>Create a new user account with email and password.</DialogDescription>
+					</DialogHeader>
+					<FieldGroup>
+						<Field>
+							<FieldLabel htmlFor="create-name">Name</FieldLabel>
+							<Input
+								id="create-name"
+								value={createName}
+								onChange={(e) => setCreateName(e.target.value)}
+								placeholder="John Doe"
+							/>
+						</Field>
+						<Field>
+							<FieldLabel htmlFor="create-email">Email</FieldLabel>
+							<Input
+								id="create-email"
+								type="email"
+								value={createEmail}
+								onChange={(e) => setCreateEmail(e.target.value)}
+								placeholder="m@example.com"
+							/>
+						</Field>
+						<Field>
+							<FieldLabel htmlFor="create-password">Password</FieldLabel>
+							<Input
+								id="create-password"
+								type="password"
+								value={createPassword}
+								onChange={(e) => setCreatePassword(e.target.value)}
+								placeholder="At least 8 characters"
+							/>
+							<FieldDescription>The user can change this password after signing in.</FieldDescription>
+						</Field>
+						<Field>
+							<FieldLabel htmlFor="create-role">Role</FieldLabel>
+							<Select value={createRole} onValueChange={(v) => setCreateRole(v ?? "user")}>
+								<SelectTrigger id="create-role">
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									<SelectItem value="user">User</SelectItem>
+									<SelectItem value="admin">Admin</SelectItem>
+								</SelectContent>
+							</Select>
+							<FieldDescription>Admins have full access to all settings and users.</FieldDescription>
+						</Field>
+					</FieldGroup>
+					<DialogFooter>
+						<Button variant="outline" onClick={() => setCreateOpen(false)}>
+							Cancel
+						</Button>
+						<Button
+							disabled={createUserMutation.isPending || !createName || !createEmail || !createPassword}
+							onClick={() => createUserMutation.mutate()}
+						>
+							{createUserMutation.isPending ? "Creating..." : "Create user"}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

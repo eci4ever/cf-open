@@ -21,6 +21,9 @@ export function createAuth(d1: D1Database) {
 			deleteUser: {
 				enabled: true,
 			},
+			changeEmail: {
+				enabled: true,
+			},
 		},
 		plugins: [
 			admin(),
