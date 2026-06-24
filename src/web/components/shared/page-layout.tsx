@@ -13,6 +13,7 @@ import {
 	SidebarProvider,
 	SidebarTrigger,
 } from "@/components/ui/sidebar";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function PageLayout({
 	session,
@@ -38,6 +39,9 @@ export function PageLayout({
 								</BreadcrumbItem>
 							</BreadcrumbList>
 						</Breadcrumb>
+					</div>
+					<div className="ml-auto px-4">
+						<ThemeToggle />
 					</div>
 				</header>
 				<ImpersonationBanner />
