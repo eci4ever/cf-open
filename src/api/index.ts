@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors";
-import { createAuth } from "./auth";
-import { createDb } from "../db/client";
-import { organization, member } from "../db/schema/index";
+import { createAuth } from "./lib/auth";
+import { createDb } from "./db/client";
+import { organization, member } from "./db/schema/index";
 import { count, eq } from "drizzle-orm";
 
 const app = new Hono<{ Bindings: Env }>();
